@@ -49,7 +49,7 @@ public:
                     }
                 }
 
-		boost::property_tree::ptree pt;
+		property_tree::ptree pt;
 
 		{
 		    std::string body;
@@ -58,7 +58,7 @@ public:
 		    std::istringstream in(body);
 
 		    try {
-			boost::property_tree::read_json(in, pt);
+			property_tree::read_json(in, pt);
 		    } catch (std::exception& e) {
 			
 			// Write reply.
@@ -99,7 +99,7 @@ public:
 		    }
 
 		    std::ostringstream out;
-		    boost::property_tree::write_json(out, pt);
+		    property_tree::write_json(out, pt);
 
 
 		    // Write reply.
@@ -190,8 +190,9 @@ int main()
                                      asio::ip::tcp
                                      ::endpoint(asio::ip::tcp::v6(), 8080));
 
-    auto work = [&acceptor](asio::yield_context yield) {
-	manager mgr;
+    manager mgr;
+
+    auto work = [&acceptor, &mgr](asio::yield_context yield) {
         int counter = 0;
         for ( ; true ; ++counter ) {
             try {
@@ -212,8 +213,12 @@ int main()
         }
     };
 
+    mgr.run();
+
     spawn(ios, work);
     ios.run();
 
     return 0;
+
 }
+

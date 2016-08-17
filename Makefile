@@ -2,12 +2,14 @@
 CXXFLAGS =  --std=c++11
 CXXFLAGS += -Ihttp/include
 CXXFLAGS += -I.
+CXXFLAGS += -g
+CXXFLAGS += -I/usr/include/python2.7
 
 all: service
 
 
-OBJECTS=service.o manager.o
-LIBS=-lboost_system -lboost_coroutine
+OBJECTS=service.o manager.o python.o
+LIBS=-lboost_system -lboost_coroutine -lpthread -lboost_python -lpython2.7
 
 service: ${OBJECTS}
 	${CXX} ${CXXFLAGS} ${OBJECTS} -o service ${LIBS}
@@ -19,6 +21,7 @@ depend:
 # DO NOT DELETE
 
 manager.o: manager.h
+python.o: manager.h
 service.o: http/include/boost/http/buffered_socket.hpp
 service.o: http/include/boost/http/socket.hpp
 service.o: http/include/boost/http/reader/request.hpp
@@ -60,4 +63,4 @@ service.o: http/include/boost/http/algorithm.hpp
 service.o: http/include/boost/http/algorithm/query.hpp
 service.o: http/include/boost/http/algorithm/write.hpp
 service.o: http/include/boost/http/status_code.hpp
-service.o: http/include/boost/http/status_code-inl.hpp
+service.o: http/include/boost/http/status_code-inl.hpp manager.h
