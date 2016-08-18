@@ -17,8 +17,6 @@ def pi(x):
     sys.stderr.write("%2.20f\n" % total)
     return None
 
-sink = job.define_lambda_worker("sink", pi)
-
 def digit(k):
     global total
     if not "total" in globals():
@@ -33,6 +31,8 @@ def digit(k):
     total = total - int(total)
     total = total * 16
     return digit
+
+sink = job.define_lambda_worker("sink", pi)
 
 digit = job.define_lambda_worker("digit", digit)
 digit.connect("output", [(sink,"input")])

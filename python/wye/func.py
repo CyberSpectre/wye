@@ -23,12 +23,12 @@ def run(lam, outputs):
     global func
     global sockets
 
+    # -----------------------------------------------------------------------
+
     sys.stdout.write("INIT\n")
 
     lam = marshal.loads(base64.b64decode(lam))
     func = types.FunctionType(lam, globals())
-
-    # -----------------------------------------------------------------------
 
     sockets = wye.parse_outputs(outputs)
 
@@ -41,10 +41,10 @@ def run(lam, outputs):
     input="tcp://%s:%d" % (fqdn, port)
     sys.stdout.write("INPUT:input:%s\n" % input)
 
-    # -----------------------------------------------------------------------
-
     sys.stdout.write("RUNNING\n")
     sys.stdout.flush()
+
+    # -----------------------------------------------------------------------
 
     while True:
         msg = skt.recv()
