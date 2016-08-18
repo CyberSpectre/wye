@@ -51,8 +51,8 @@ class process {
     
     boost::process::child* proc;
 
-    std::map<int, std::string> inputs;
-    std::map<int, std::string> outputs;
+    std::vector<std::string> inputs;
+    std::vector<std::string> outputs;
     
 };
 
