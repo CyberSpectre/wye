@@ -1,24 +1,20 @@
 
 import time, sys
 import json
-import wye.context
+import wye
+
+# ---------------------------------------------------------------------------
 
 print "INIT"
-
-# ---------------------------------------------------------------------------
-
-sockets = wye.context.parse_outputs(sys.argv[1:])
-
-# ---------------------------------------------------------------------------
-
+sockets = wye.parse_outputs(sys.argv[1:])
 print "RUNNING"
 sys.stdout.flush()
 
-sys.stderr.write("Sender is running.\n")
+# ---------------------------------------------------------------------------
 
-for i in range(0, 100):
+for i in range(0, 10000000):
 
-    time.sleep(0.05)
+    time.sleep(0.3)
 
     msg = i
 

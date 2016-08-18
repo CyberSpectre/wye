@@ -1,16 +1,23 @@
 #!/usr/bin/env python
 
-import wye.context
+import wye
 import tabulate
 import sys
 
-if len(sys.argv) != 2:
-    sys.stderr.write("Usage:\n\tget-job <job>\n")
+try:
+    id = sys.argv[1]
+except:
+    sys.stderr.write("Usage:\n\twye-get-job <id> [<url>]\n")
     sys.exit(1)
 
-context = wye.context.StreamingContext()
+try:
+    url = sys.argv[1]
+except:
+    url = "http://localhost:8080/"
 
-job = context.get_job(sys.argv[1])
+context = wye.Context(url)
+
+job = context.get_job(id)
 
 print
 

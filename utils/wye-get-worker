@@ -1,40 +1,47 @@
 #!/usr/bin/env python
 
-import wye.context
+import wye
 import tabulate
 import sys
 
-if len(sys.argv) != 2:
-    sys.stderr.write("Usage:\n\tget-job <job>\n")
+try:
+    id = sys.argv[1]
+except:
+    sys.stderr.write("Usage:\n\twye-delete-worker <id> [<url>]\n")
     sys.exit(1)
 
-context = wye.context.StreamingContext()
+try:
+    url = sys.argv[2]
+except:
+    url = "http://localhost:8080/"
 
-job = context.get_worker(sys.argv[1])
+context = wye.Context(url)
+
+worker = context.get_worker(id)
 
 print "%-20s %s" % ("id:", sys.argv[1])
-if job.has_key("name"):
-    print "%-20s %s" % ("name:", job["name"])
-if job.has_key("state"):
-    print "%-20s %s" % ("state:", job["state"])
-if job.has_key("exec"):
-    print "%-20s %s" % ("exec:", job["exec"])
-if job.has_key("args"):
+if worker.has_key("name"):
+    print "%-20s %s" % ("name:", worker["name"])
+if worker.has_key("state"):
+    print "%-20s %s" % ("state:", worker["state"])
+if worker.has_key("exec"):
+    print "%-20s %s" % ("exec:", worker["exec"])
+if worker.has_key("args"):
     t = "args:"
-    for a in job["args"]:
+    for a in worker["args"]:
         print "%-20s %s" % (t, a)
         t = ""
-if job.has_key("inputs"):
+if worker.has_key("inputs"):
     t = "inputs:"
-    for a in job["inputs"]:
+    for a in worker["inputs"]:
         print "%-20s %s:" % (t, a)
-        print "%-20s   %s" % ("", job["inputs"][a])
+        print "%-20s   %s" % ("", worker["inputs"][a])
         t = ""
         
-if job.has_key("outputs"):
+if worker.has_key("outputs"):
     t = "outputs:"
-    for a in job["outputs"]:
-        for x in job["outputs"][a]:
+    for a in worker["outputs"]:
+        for x in worker["outputs"][a]:
             print "%-20s %s:" % (t, a)
             outs = ""
             for y in x:

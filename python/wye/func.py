@@ -7,7 +7,7 @@ import socket
 import marshal
 import types
 import base64
-import wye.context
+import wye
 
 def handle(msg):
 
@@ -23,8 +23,6 @@ def run(lam, outputs):
     global func
     global sockets
 
-    sys.stderr.write("FUNC STARTED\n")
-
     sys.stdout.write("INIT\n")
 
     lam = marshal.loads(base64.b64decode(lam))
@@ -32,7 +30,7 @@ def run(lam, outputs):
 
     # -----------------------------------------------------------------------
 
-    sockets = wye.context.parse_outputs(outputs)
+    sockets = wye.parse_outputs(outputs)
 
     # -----------------------------------------------------------------------
 
@@ -44,7 +42,7 @@ def run(lam, outputs):
     sys.stdout.write("INPUT:input:%s\n" % input)
 
     # -----------------------------------------------------------------------
-    sys.stdout.write("NOTICE:Notice here\n");
+
     sys.stdout.write("RUNNING\n")
     sys.stdout.flush()
 

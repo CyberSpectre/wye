@@ -14,7 +14,6 @@ input="tcp://%s:%d" % (fqdn, port)
 
 print "INIT"
 print "INPUT:input:%s" % input
-print "NOTICE:FLush!"
 print "RUNNING"
 sys.stdout.flush()
 

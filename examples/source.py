@@ -5,13 +5,13 @@ import zmq
 import random
 import json
 import argparse
-import wye.context
+import wye
 
 print "INIT"
 
 # ---------------------------------------------------------------------------
 
-sockets = wye.context.parse_outputs(sys.argv[1:])
+sockets = wye.parse_outputs(sys.argv[1:])
 
 # ---------------------------------------------------------------------------
 
@@ -24,7 +24,7 @@ while True:
     time.sleep(1)
 
     msg = { "x": random.randint(0, 10) + 1, "y": random.randint(0, 10) + 1 }
+    sys.stderr.write("Source: %s\n" % json.dumps(msg))
     for s in sockets["output"]:
-        sys.stderr.write("Source: %s\n" % json.dumps(msg))
         s.send(json.dumps(msg))
 
