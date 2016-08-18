@@ -3,7 +3,7 @@ CXXFLAGS =  --std=c++11
 CXXFLAGS += -Ihttp/include
 CXXFLAGS += -I.
 CXXFLAGS += -g
-CXXFLAGS += -I/usr/include/python2.7
+CXXFLAGS += -Iprocess
 
 all: service
 
