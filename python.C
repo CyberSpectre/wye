@@ -2,6 +2,10 @@
 #include <manager.h>
 #include <boost/python.hpp>
 
+/*
+stackoverflow.com/questions/26061298/python-multi-thread-multi-interpreter-c-api
+*/
+
 bool manager::py_initialised = false;
 
 boost::property_tree::ptree
@@ -23,7 +27,28 @@ manager::create_python_worker(const boost::property_tree::ptree& p)
     if (py_initialised == false) {
 	// Don't fool with signal handler.
 	Py_InitializeEx(false);
+
+	PyEval_InitThreads();
+
+	PyEval_ReleaseLock();
+	
 	py_initialised = true;
+    }
+
+    auto body = [] () {
+
+	PyEval_AcquireLock();
+
+	PyThreadState* ts = Py_NewInterpreter();
+
+	PyThreadState* ts2 =  PyThreadStateNew(ts->interp);
+
+	PyThreadState_Swap(ts2);
+
+	// Do stuff
+
+	
+
     }
 
     boost::python::object main_module = boost::python::import("__main__");
