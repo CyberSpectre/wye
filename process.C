@@ -5,7 +5,7 @@
 
 void process::run() {
   boost::process::context ctx;
-  ctx.stdout_behavior = boost::process::inherit_stream();
+  ctx.stdout_behavior = boost::process::capture_stream();
   ctx.stderr_behavior = boost::process::inherit_stream();
 
   boost::process::child c = boost::process::launch(exec, args, ctx);

@@ -5,7 +5,8 @@
 
 std::map<error_code,std::string> error_string = {
     {OK, "OK"}, {NOT_IMPLEMENTED, "NOT_IMPLEMENTED"},
-    {INVALID_REQUEST, "INVALID_REQUEST"}
+    {INVALID_REQUEST, "INVALID_REQUEST"},
+    {PROC_INIT_FAIL, "PROCESSING_INIT_FAIL"}
 };
 
 boost::property_tree::ptree

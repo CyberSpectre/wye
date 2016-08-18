@@ -12,7 +12,8 @@
 enum error_code {
     OK,
     NOT_IMPLEMENTED,
-    INVALID_REQUEST
+    INVALID_REQUEST,
+    PROC_INIT_FAIL
 };
 
 extern std::map<error_code,std::string> error_string;
@@ -38,6 +39,10 @@ class process {
 	}
     }
 
+    boost::process::pistream& get_output() {
+	return proc->get_stdout();
+    }
+    
     process_id id;
     std::string job_id;
 
@@ -45,6 +50,9 @@ class process {
     std::vector<std::string> args;
     
     boost::process::child* proc;
+
+    std::map<int, std::string> inputs;
+    std::map<int, std::string> outputs;
     
 };
 
