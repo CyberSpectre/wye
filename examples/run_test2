@@ -3,18 +3,27 @@
 import sys
 import wye
 
+def generator():
+    for i in range(0, 10000000):
+        time.sleep(0.3)
+        yield i
+
+def sink(x):
+    import sys, json
+    sys.stderr.write("Sink: %s\n" % json.dumps(x))
+
 url = "http://localhost:8080"
 
 context = wye.Context(url)
 
 job = context.define_job(name="job1", description="A test job")
 
-sink = job.define_python_worker("sink", "sink.py", parallelism=1)
+sink = job.define_lambda_worker("sink", sink)
 
 trans = job.define_lambda_worker("trans", lambda x: [x, x * x])
 trans.connect("output", [(sink,"input")])
 
-src = job.define_python_worker("source", "source_nums.py")
+src = job.define_generator_worker("source", generator)
 src.connect("output", [(trans,"input")])
 
 job_id = job.implement()

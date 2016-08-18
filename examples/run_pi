@@ -32,12 +32,17 @@ def digit(k):
     total = total * 16
     return digit
 
+def source():
+    for i in range(0, 10000000):
+        time.sleep(1)
+        yield i
+
 sink = job.define_lambda_worker("sink", pi)
 
 digit = job.define_lambda_worker("digit", digit)
 digit.connect("output", [(sink,"input")])
 
-src = job.define_python_worker("source", "source_nums.py")
+src = job.define_generator_worker("source", source)
 src.connect("output", [ (digit,"input") ])
 
 job_id = job.implement()

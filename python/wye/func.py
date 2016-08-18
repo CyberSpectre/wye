@@ -18,7 +18,7 @@ def handle(msg):
         for s in sockets["output"]:
             s.send(msg)
 
-def run(lam, outputs):
+def run_lambda(lam, outputs):
 
     global func
     global sockets
@@ -49,4 +49,34 @@ def run(lam, outputs):
     while True:
         msg = skt.recv()
         handle(json.loads(msg))
+
+
+def run_generator(lam, outputs):
+
+    global func
+    global sockets
+
+    # -----------------------------------------------------------------------
+
+    sys.stdout.write("INIT\n")
+
+    lam = marshal.loads(base64.b64decode(lam))
+    func = types.FunctionType(lam, globals())
+
+    sockets = wye.parse_outputs(outputs)
+
+    sys.stdout.write("RUNNING\n")
+    sys.stdout.flush()
+
+    # -----------------------------------------------------------------------
+
+    gen = func()
+    
+    while True:
+
+        msg = next(gen)
+        msg = json.dumps(msg)
+        sys.stderr.flush()
+        for s in sockets["output"]:
+            s.send(msg)
 

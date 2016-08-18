@@ -22,8 +22,6 @@ manager::run_python(std::shared_ptr<process> proc,
     
     while(std::getline(out, line)) {
 
-	std::cerr << "Line: " << line << std::endl;
-
 	if (line == "INIT") {
 	    continue;
 	}
@@ -189,6 +187,7 @@ manager::create_lambda_worker(const boost::property_tree::ptree& p)
 {
 
     std::string file = "lambda.py";
+    std::string call;
     std::string lambda;
 
     std::shared_ptr<process> proc =
@@ -202,6 +201,12 @@ manager::create_lambda_worker(const boost::property_tree::ptree& p)
 
     try {
 	proc->job_id = p.get<std::string>("job_id");
+    } catch (std::exception& e) {
+	return error(INVALID_REQUEST, e.what());
+    }
+
+    try {
+	call = p.get<std::string>("call");
     } catch (std::exception& e) {
 	return error(INVALID_REQUEST, e.what());
     }
@@ -239,7 +244,7 @@ manager::create_lambda_worker(const boost::property_tree::ptree& p)
     }
 
     std::ostringstream buf;
-    buf << "import wye.func; import sys; sys.stderr.write(str(wye.func)); sys.stderr.write('BUNCHY\\n'); wye.func.run('" << lambda << "', [";
+    buf << "import wye.func; wye.func." << call << "('" << lambda << "', [";
 
     std::string psep = "";
     
@@ -267,8 +272,6 @@ manager::create_lambda_worker(const boost::property_tree::ptree& p)
     }
 
     buf << "])";
-
-    std::cerr << buf.str() << std::endl;
 
     proc->exec = "/usr/bin/python";
     proc->args = { {"python"}, {"-c"}, buf.str() };

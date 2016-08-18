@@ -103,7 +103,14 @@ class Job:
 
     def define_lambda_worker(self, name, func, outputs=None, parallelism=1):
         func = base64.b64encode(marshal.dumps(func.func_code))
-        return self.define_worker(name, "lambda", {"lambda":func},
+        return self.define_worker(name, "lambda",
+                                  {"lambda":func, "call": "run_lambda"},
+                                  outputs, parallelism)
+
+    def define_generator_worker(self, name, func, outputs=None, parallelism=1):
+        func = base64.b64encode(marshal.dumps(func.func_code))
+        return self.define_worker(name, "lambda",
+                                  {"lambda":func, "call": "run_generator"},
                                   outputs, parallelism)
 
     def define_worker(self, name, model, params, outputs=None, parallelism=1):
