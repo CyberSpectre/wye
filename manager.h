@@ -14,6 +14,11 @@ enum error_code {
 
 extern std::map<error_code,std::string> error_string;
 
+class process {
+  public:
+    boost::process::child proc;
+};
+
 class manager {
 
   private:
