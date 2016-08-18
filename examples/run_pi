@@ -10,31 +10,49 @@ context = wye.Context(url)
 job = context.define_job(name="pi", description="Calculates PI")
 
 def pi(x):
+
+    from decimal import Decimal, getcontext
+    getcontext().prec = 1000
+    
     global total
     if not "total" in globals():
-        total = 0.0
-    total = total + (x[1] / (16.0 ** x[0]))
-    sys.stderr.write("%2.20f\n" % total)
+        total = Decimal(0)
+        
+    # Keep a total at some point, we run out of precision, but just ignore
+    # exceptions.
+    try:
+        total += (Decimal(x[1]) / (Decimal(16) ** Decimal(x[0])))
+    except:
+        pass
+
+    sys.stderr.write("\n\n\n\n%s\n" % str(total))
     return None
 
 def digit(k):
+
+    from decimal import Decimal, getcontext
+    getcontext().prec = 1000
+
     global total
     if not "total" in globals():
-        globals()["total"] = 0.0
-    f1 = 4.0 / (8.0 * k + 1)
-    f2 = - (2.0 / (8.0 * k + 4.0))
-    f3 = - (1.0 / (8.0 * k + 5.0))
-    f4 = - (1.0 / (8.0 * k + 6.0))
+        globals()["total"] = Decimal(0)
+        
+    f1 = Decimal(4) / (Decimal(8) * Decimal(k) + Decimal(1))
+    f2 = - (Decimal(2) / (Decimal(8) * Decimal(k) + Decimal(4)))
+    f3 = - (Decimal(1) / (Decimal(8) * Decimal(k) + Decimal(5)))
+    f4 = - (Decimal(1) / (Decimal(8) * Decimal(k) + Decimal(6)))
+    
     f = (f1 + f2 + f3 + f4)
-    total = total + f
+    
+    total += f
     digit = (k, int(total))
-    total = total - int(total)
-    total = total * 16
+    total -= int(total)
+    total *= 16
     return digit
 
 def source():
     for i in range(0, 10000000):
-        time.sleep(1)
+        time.sleep(0.01)
         yield i
 
 sink = job.define_lambda_worker("sink", pi)
