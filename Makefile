@@ -8,8 +8,9 @@ CXXFLAGS += -Iprocess
 all: service
 
 
-OBJECTS=service.o manager.o python.o
-LIBS=-lboost_system -lboost_coroutine -lpthread -lboost_python -lpython2.7
+OBJECTS=service.o manager.o python.o process.o
+LIBS=-lboost_system -lboost_coroutine -lpthread -lboost_python \
+	-lboost_serialization
 
 service: ${OBJECTS}
 	${CXX} ${CXXFLAGS} ${OBJECTS} -o service ${LIBS}

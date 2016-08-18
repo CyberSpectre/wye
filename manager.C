@@ -76,3 +76,15 @@ manager::run()
 
 }
 
+void manager::stop()
+{
+
+//    for(auto p : processes) {
+//	p.second.terminate();
+//    }
+
+    // Destructors will kill processors.
+    processes.clear();
+
+}
+

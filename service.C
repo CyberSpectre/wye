@@ -4,6 +4,7 @@
 #include <boost/utility/string_ref.hpp>
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/spawn.hpp>
+#include <boost/asio/signal_set.hpp>
 #include <boost/http/buffered_socket.hpp>
 #include <boost/http/algorithm.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -191,6 +192,19 @@ int main()
                                      ::endpoint(asio::ip::tcp::v6(), 8080));
 
     manager mgr;
+
+    auto signal_handler = [&mgr](const boost::system::error_code& error,
+				 int signal)
+    {
+	std::cerr << "Stopping..." << std::endl;
+	mgr.stop();
+	std::cerr << "Stopped." << std::endl;
+	exit(1);
+    };
+
+    boost::asio::signal_set signals(ios, SIGINT, SIGTERM);
+
+    signals.async_wait(signal_handler);
 
     auto work = [&acceptor, &mgr](asio::yield_context yield) {
         int counter = 0;

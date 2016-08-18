@@ -5,6 +5,9 @@
 #include <boost/property_tree/ptree.hpp>
 #include <thread>
 #include <map>
+#include <boost/process.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <iostream>
 
 enum error_code {
     OK,
@@ -14,9 +17,35 @@ enum error_code {
 
 extern std::map<error_code,std::string> error_string;
 
+typedef boost::uuids::uuid process_id;
+
 class process {
   public:
-    boost::process::child proc;
+
+    virtual void run();
+
+    virtual void terminate();
+    
+    process() { proc = nullptr; }
+
+    ~process() {
+	if (proc) {
+	    proc->terminate();
+	    proc->wait();
+	    delete proc;
+	    proc = 0;
+	    std::cerr << "Process killed" << std::endl;
+	}
+    }
+
+    process_id id;
+    std::string job_id;
+
+    std::string exec;
+    std::vector<std::string> args;
+    
+    boost::process::child* proc;
+    
 };
 
 class manager {
@@ -27,11 +56,15 @@ class manager {
 
     static bool py_initialised;
 
+    boost::uuids::random_generator uuidgen;
+
   public:
 
     manager() {
 	background = nullptr;
     }
+
+    std::map<process_id, process> processes;
     
     boost::property_tree::ptree
 	handle(const boost::property_tree::ptree&);
@@ -41,6 +74,8 @@ class manager {
 	create_python_worker(const boost::property_tree::ptree&);
 
     void run();
+
+    void stop();
 
 };
 
