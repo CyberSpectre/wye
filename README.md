@@ -24,18 +24,40 @@ Lots of ambitions to expand the framework into:
 Compile the framework:
 
 ```
+autoreconf -fi
+./configure
 make
+sudo make install
 ```
 Run the service daemon.  This starts a service on port 8080:
 
 ```
-./service
+# For running the examples, make sure wye-service is running in the
+# examples directory.
+cd .../examples/
+wye-service
 ```
 
 In a separate terminal, invoke a stream processing job:
 
 ```
-./run_test
+cd .../examples/
+
+# Simple test, does some arithmetic.
+python run_test
+
+# When bored, delete all jobs...
+wye-get-jobs | awk '(NR > 2){print $1}' | xargs -i@ wye-delete-job @
+
+# Another simple test, uses lambdas and generators
+python run_test2
+
+# When bored, delete all jobs...
+wye-get-jobs | awk '(NR > 2){print $1}' | xargs -i@ wye-delete-job @
+
+# Calculates PI
+python run_pi
+
 ```
 
 This submits a job consisting of a set of workers.  There is a source job
@@ -49,12 +71,12 @@ per second.
 ## Utilities
 
 ```
-delete-job <job>
-delete-worker <worker>
-get-job <job>
-get-jobs
-get-worker <worker>
-get-workers
+wye-delete-job <job>
+wye-delete-worker <worker>
+wye-get-job <job>
+wye-get-jobs
+wye-get-worker <worker>
+wye-get-workers
 ```
 
 ## JSON interface
