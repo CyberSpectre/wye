@@ -55,8 +55,25 @@ public:
 		    body.assign(self->message.body().begin(),
 				self->message.body().end());
 		    std::istringstream in(body);
-		    std::cerr << "Parse JSON" << std::endl;
-		    boost::property_tree::read_json(in, pt);
+
+		    try {
+			boost::property_tree::read_json(in, pt);
+		    } catch (std::exception& e) {
+			
+			// Write reply.
+			http::message reply;
+
+			const char body[] = "Your client sent a message this server could not interpret.";
+			std::copy(body, body + sizeof(body) - 1,
+				  std::back_inserter(reply.body()));
+
+			self->socket.async_write_response(400,
+							  string_ref("Bad Request"),
+							  reply,
+							  yield);
+			return;
+		    }
+
 		    std::string thing;
 		    std::cerr << "Get" << std::endl;
 
