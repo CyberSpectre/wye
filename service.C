@@ -11,11 +11,15 @@
 #include <sstream>
 #include <stdexcept>
 
+#include <manager.h>
+
 using namespace std;
 using namespace boost;
 
 class connection: public std::enable_shared_from_this<connection>
 {
+private:
+    manager& mgr;
 public:
     void operator()(asio::yield_context yield) {
 	auto self = shared_from_this();
@@ -74,12 +78,14 @@ public:
 			return;
 		    }
 
-		    std::string thing;
-		    std::cerr << "Get" << std::endl;
+		    mgr.handle(pt);
 
-		    thing = pt.get<std::string>("one.two");
+//		    std::string thing;
+//		    std::cerr << "Get" << std::endl;
 
-		    std::cerr << "Thing: " << thing << std::endl;
+//		    thing = pt.get<std::string>("one.two");
+
+//		    std::cerr << "Thing: " << thing << std::endl;
 
 		}
 
@@ -125,16 +131,18 @@ public:
     }
 
     static std::shared_ptr<connection> make_connection(asio::io_service &ios,
-                                                       int counter)
+                                                       int counter,
+						       manager& m)
     {
-        return std::shared_ptr<connection>{new connection{ios, counter}};
+        return std::shared_ptr<connection>{new connection{ios, counter, m}};
     }
 
 private:
 
-    connection(asio::io_service &ios, int counter)
+    connection(asio::io_service &ios, int counter, manager& mgr)
         : socket(ios)
-        , counter(counter) {}
+        , counter(counter)
+	, mgr(mgr) {}
 
     http::buffered_socket socket;
     int counter;
@@ -152,12 +160,13 @@ int main()
                                      ::endpoint(asio::ip::tcp::v6(), 8080));
 
     auto work = [&acceptor](asio::yield_context yield) {
+	manager mgr;
         int counter = 0;
         for ( ; true ; ++counter ) {
             try {
                 auto connection
                     = connection::make_connection(acceptor.get_io_service(),
-                                                  counter);
+                                                  counter, mgr);
                 acceptor.async_accept(connection->tcp_layer(), yield);
 
                 auto handle_connection
