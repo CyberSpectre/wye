@@ -49,9 +49,6 @@ public:
                     }
                 }
 
-		std::cout << "Body length " << self->message.body().size()
-			  << std::endl;
-
 		boost::property_tree::ptree pt;
 
 		{
@@ -78,16 +75,51 @@ public:
 			return;
 		    }
 
-		    mgr.handle(pt);
+		    try {
+			pt = mgr.handle(pt);
+		    } catch (std::exception& e) {
 
-//		    std::string thing;
-//		    std::cerr << "Get" << std::endl;
+			// Write reply.
+			http::message reply;
 
-//		    thing = pt.get<std::string>("one.two");
+			std::string errormsg = e.what();
 
-//		    std::cerr << "Thing: " << thing << std::endl;
+			std::cerr << "Error: " << errormsg << std::endl;
 
+			std::copy(errormsg.begin(),
+				  errormsg.end(),
+				  std::back_inserter(reply.body()));
+
+			self->socket.async_write_response(500,
+							  string_ref("Internal Server Error"),
+							  reply,
+							  yield);
+			return;
+
+		    }
+
+		    std::ostringstream out;
+		    boost::property_tree::write_json(out, pt);
+
+
+		    // Write reply.
+		    http::message reply;
+		    reply.body().clear();
+
+		    std::string repbody = out.str();
+
+		    std::copy(repbody.begin(),
+			      repbody.end(),
+			      std::back_inserter(reply.body()));
+
+		    self->socket.async_write_response(200,
+						      string_ref("OK"),
+						      reply,
+						      yield);
+		    return;
 		}
+
+		// Rest of this not called.
 
 		// Message received.
                 cout << "Method: " << self->method << std::endl;
@@ -117,7 +149,6 @@ public:
 		throw e;
             }
 
-//            cout << '[' << self->counter << "] Error: " << e.what() << endl;
 	    return;
 	    
         } catch (std::exception &e) {
