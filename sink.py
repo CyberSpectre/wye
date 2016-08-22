@@ -1,17 +1,28 @@
 
 import time
 import sys
+import zmq
+import socket
+import json
 
-sys.stderr.write("Running...\n")
+fqdn = socket.getfqdn()
+
+ctxt = zmq.Context()
+skt = ctxt.socket(zmq.PULL)
+port = skt.bind_to_random_port("tcp://*")
+
+input="tcp://%s:%d" % (fqdn, port)
 
 print "INIT"
-print "INPUT:/tmp/input0"
-print "INPUT:/tmp/input1"
+print "INPUT:%s" % input
 print "RUNNING"
 sys.stdout.flush()
-    
 sys.stderr.write("Done init.\n")
 
+def handle(msg):
+    sys.stderr.write("Message.\n")
+
 while True:
-    time.sleep(0.2)
+    msg = skt.recv()
+    handle(json.loads(msg))
 

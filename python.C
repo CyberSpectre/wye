@@ -47,10 +47,11 @@ manager::create_python_worker(const boost::property_tree::ptree& p)
     processes[id].run();
 
     boost::process::pistream& out = processes[id].get_output();
+
+    std::string line;
     
-    while(1) {
-	std::string line;
-	std::getline(out, line);
+    while(std::getline(out, line)) {
+
 
 	std::cerr << line << std::endl;
 
@@ -59,19 +60,23 @@ manager::create_python_worker(const boost::property_tree::ptree& p)
 	}
 
 	if (line.substr(0, 6) == "INPUT:") {
-
 	    processes[id].inputs.push_back(line.substr(6));
 	    std::cout << "Input " << line.substr(6) << std::endl;
-
+	    continue;
 	}
 
 	if (line.substr(0, 6) == "ERROR:") {
+
+	    // This 'waits' the process.
+	    processes.erase(id);
+	    
 	    return error(PROC_INIT_FAIL,
 			 "Process failed to start: " + line.substr(6));
 	}
 
 	if (line.substr(0, 7) == "NOTICE:") {
 	    std::cerr << "Notice: " << line.substr(7) << std::endl;
+	    continue;
 	}
 
 	if (line == "RUNNING") {
@@ -79,8 +84,24 @@ manager::create_python_worker(const boost::property_tree::ptree& p)
 	    break;
 	}
 
+	// This 'waits' the process.
+	processes.erase(id);
+	return error(PROC_INIT_FAIL, "Bad return string: " + line);
+
     }
 
+    if (out.bad()) {
+	// This 'waits' the process.
+	processes.erase(id);
+	return error(PROC_INIT_FAIL, "Process didn't send RUNNING");
+    }
+
+    if (out.eof()) {
+	// This 'waits' the process.
+	processes.erase(id);
+	return error(PROC_INIT_FAIL, "Process didn't send RUNNING");
+    }
+	
     std::ostringstream ofs;
     ofs << id;
 
@@ -97,7 +118,6 @@ manager::create_python_worker(const boost::property_tree::ptree& p)
 	}
 
 	r.add_child("inputs", ins);
-//	r.put_child(boost::property_tree::ptree::path_type("inputs", ins));
 	
     }
 
