@@ -33,20 +33,22 @@ manager::create_python_worker(const boost::property_tree::ptree& p)
     // UUID
     boost::uuids::uuid id = uuidgen();
 
-    processes[id].id = id;
-    processes[id].job_id = "n/a";
-    processes[id].exec = "/usr/bin/python";
-    processes[id].args = { {"python"}, {file} };
-    processes[id].outputs = outputs;
+    std::shared_ptr<process> proc = std::shared_ptr<process>(new process());
+    proc->id = id;
+    proc->job_id = "n/a";
+    proc->exec = "/usr/bin/python";
+    proc->args = { {"python"}, {file} };
+    proc->outputs = outputs;
+
 
     for(auto i: outputs) {
-	processes[id].args.push_back(i);
+	proc->args.push_back(i);
     }
     
     std::cerr << "Run..." << std::endl;
-    processes[id].run();
+    proc->run();
 
-    boost::process::pistream& out = processes[id].get_output();
+    boost::process::pistream& out = proc->get_output();
 
     std::string line;
     
@@ -60,16 +62,13 @@ manager::create_python_worker(const boost::property_tree::ptree& p)
 	}
 
 	if (line.substr(0, 6) == "INPUT:") {
-	    processes[id].inputs.push_back(line.substr(6));
+	    proc->inputs.push_back(line.substr(6));
 	    std::cout << "Input " << line.substr(6) << std::endl;
 	    continue;
 	}
 
 	if (line.substr(0, 6) == "ERROR:") {
 
-	    // This 'waits' the process.
-	    processes.erase(id);
-	    
 	    return error(PROC_INIT_FAIL,
 			 "Process failed to start: " + line.substr(6));
 	}
@@ -85,22 +84,21 @@ manager::create_python_worker(const boost::property_tree::ptree& p)
 	}
 
 	// This 'waits' the process.
-	processes.erase(id);
 	return error(PROC_INIT_FAIL, "Bad return string: " + line);
 
     }
 
     if (out.bad()) {
 	// This 'waits' the process.
-	processes.erase(id);
 	return error(PROC_INIT_FAIL, "Process didn't send RUNNING");
     }
 
     if (out.eof()) {
 	// This 'waits' the process.
-	processes.erase(id);
 	return error(PROC_INIT_FAIL, "Process didn't send RUNNING");
     }
+
+    workers[id] = proc;
 	
     std::ostringstream ofs;
     ofs << id;
@@ -108,10 +106,10 @@ manager::create_python_worker(const boost::property_tree::ptree& p)
     boost::property_tree::ptree r;
     r.put("id", ofs.str());
 
-    if (processes[id].inputs.size() > 0) {
+    if (proc->inputs.size() > 0) {
 	boost::property_tree::ptree ins;
 
-	for(auto i: processes[id].inputs) {
+	for(auto i: proc->inputs) {
 	    boost::property_tree::ptree elt;
 	    elt.put_value(i);
 	    ins.push_back(std::make_pair("", elt));

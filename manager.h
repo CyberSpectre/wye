@@ -20,7 +20,15 @@ extern std::map<error_code,std::string> error_string;
 
 typedef boost::uuids::uuid process_id;
 
-class process {
+class worker {
+  public:
+    virtual ~worker() {}
+    process_id id;
+    std::string job_id;
+};
+
+class process : public worker {
+
   public:
 
     virtual void run();
@@ -29,7 +37,7 @@ class process {
     
     process() { proc = nullptr; }
 
-    ~process() {
+    virtual ~process() {
 	if (proc) {
 	    proc->terminate();
 	    proc->wait();
@@ -43,9 +51,6 @@ class process {
 	return proc->get_stdout();
     }
     
-    process_id id;
-    std::string job_id;
-
     std::string exec;
     std::vector<std::string> args;
     
@@ -72,14 +77,19 @@ class manager {
 	background = nullptr;
     }
 
-    std::map<process_id, process> processes;
+    typedef std::shared_ptr<worker> workptr;
+    
+    std::map<process_id, workptr> workers;
     
     boost::property_tree::ptree
 	handle(const boost::property_tree::ptree&);
+
     boost::property_tree::ptree
 	create_worker(const boost::property_tree::ptree&);
     boost::property_tree::ptree
 	create_python_worker(const boost::property_tree::ptree&);
+    boost::property_tree::ptree
+	get_workers(const boost::property_tree::ptree&);
 
     void run();
 

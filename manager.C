@@ -37,8 +37,16 @@ manager::handle(const boost::property_tree::ptree& p)
   if (op == "create-worker")
       return create_worker(p);
 
+  if (op == "get-workers")
+      return get_workers(p);
+
   return error(INVALID_REQUEST, "Operation '" + op + "' not recognised.");
 
+}
+
+boost::property_tree::ptree
+manager::get_workers(const boost::property_tree::ptree& p) {
+	return error(NOT_IMPLEMENTED, "Not implemented");
 }
 
 boost::property_tree::ptree
@@ -85,7 +93,7 @@ void manager::stop()
 //    }
 
     // Destructors will kill processors.
-    processes.clear();
+    workers.clear();
 
 }
 
