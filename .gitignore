@@ -2,3 +2,4 @@
 service
 *.o
 Makefile.bak
+wye.pyc

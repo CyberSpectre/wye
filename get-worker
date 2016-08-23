@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+
+import wye
+import tabulate
+import sys
+
+if len(sys.argv) != 2:
+    sys.stderr.write("Usage:\n\tget-job <job>\n")
+    sys.exit(1)
+
+context = wye.StreamingContext()
+
+job = context.get_worker(sys.argv[1])
+
+print "%-20s %s" % ("id:", sys.argv[1])
+if job.has_key("name"):
+    print "%-20s %s" % ("name:", job["name"])
+if job.has_key("state"):
+    print "%-20s %s" % ("state:", job["state"])
+if job.has_key("exec"):
+    print "%-20s %s" % ("exec:", job["exec"])
+if job.has_key("args"):
+    t = "args:"
+    for a in job["args"]:
+        print "%-20s %s" % (t, a)
+        t = ""
+if job.has_key("inputs"):
+    t = "inputs:"
+    for a in job["inputs"]:
+        print "%-20s %s" % (t, a)
+        t = ""
+if job.has_key("outputs"):
+    t = "outputs:"
+    for a in job["outputs"]:
+        print "%-20s %s" % (t, a)
+        t = ""
+
+sys.exit(0)
+
+table = []
+
+workers = job["workers"]
+
+for w in workers:
+    table.append([w,
+                  workers[w].get("name",""),
+                  workers[w].get("job_id",""),
+                  workers[w].get("state","")])
+
+header = ["worker id", "name", "job", "state"]
+print tabulate.tabulate(table, headers=header)
+
+
+
+

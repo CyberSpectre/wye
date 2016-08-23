@@ -11,6 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <sstream>
 #include <stdexcept>
+#include <mutex>
 
 #include <manager.h>
 
@@ -205,6 +206,18 @@ int main()
     boost::asio::signal_set signals(ios, SIGINT, SIGTERM);
 
     signals.async_wait(signal_handler);
+
+    /*
+    auto do_nothing = [] (const boost::system::error_code& error,
+			  int signal)
+    {
+	std::cerr << "SIGCHILD" << std::endl;
+    };
+
+    boost::asio::signal_set signals2(ios, SIGCHLD);
+
+    signals2.async_wait(do_nothing);
+    */
 
     auto work = [&acceptor, &mgr](asio::yield_context yield) {
         int counter = 0;

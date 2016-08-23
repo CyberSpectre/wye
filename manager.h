@@ -5,9 +5,10 @@
 #include <boost/property_tree/ptree.hpp>
 #include <thread>
 #include <map>
-#include <boost/process.hpp>
-#include <boost/uuid/random_generator.hpp>
 #include <iostream>
+#include <mutex>
+
+#include <worker.h>
 
 enum error_code {
     OK,
@@ -18,47 +19,15 @@ enum error_code {
 
 extern std::map<error_code,std::string> error_string;
 
-typedef boost::uuids::uuid process_id;
-
-class worker {
+class job {
+  private:
+    static boost::uuids::random_generator uuidgen;
   public:
-    virtual ~worker() {}
-    process_id id;
-    std::string job_id;
-};
-
-class process : public worker {
-
-  public:
-
-    virtual void run();
-
-    virtual void terminate();
-    
-    process() { proc = nullptr; }
-
-    virtual ~process() {
-	if (proc) {
-	    proc->terminate();
-	    proc->wait();
-	    delete proc;
-	    proc = 0;
-	    std::cerr << "Process killed" << std::endl;
-	}
-    }
-
-    boost::process::pistream& get_output() {
-	return proc->get_stdout();
-    }
-    
-    std::string exec;
-    std::vector<std::string> args;
-    
-    boost::process::child* proc;
-
-    std::vector<std::string> inputs;
-    std::vector<std::string> outputs;
-    
+    virtual ~job() {}
+    job();
+    std::string id;
+    std::string name;
+    std::string description;
 };
 
 class manager {
@@ -69,8 +38,6 @@ class manager {
 
     static bool py_initialised;
 
-    boost::uuids::random_generator uuidgen;
-
   public:
 
     manager() {
@@ -79,7 +46,11 @@ class manager {
 
     typedef std::shared_ptr<worker> workptr;
     
-    std::map<process_id, workptr> workers;
+    std::map<worker_id, workptr> workers;
+    std::mutex workers_mutex;
+
+    std::map<std::string, job> jobs;
+    std::mutex jobs_mutex;
     
     boost::property_tree::ptree
 	handle(const boost::property_tree::ptree&);
@@ -90,6 +61,16 @@ class manager {
 	create_python_worker(const boost::property_tree::ptree&);
     boost::property_tree::ptree
 	get_workers(const boost::property_tree::ptree&);
+    boost::property_tree::ptree
+	delete_worker(const boost::property_tree::ptree&);
+    boost::property_tree::ptree
+	create_job(const boost::property_tree::ptree&);
+    boost::property_tree::ptree
+	get_job(const boost::property_tree::ptree&);
+    boost::property_tree::ptree
+	delete_job(const boost::property_tree::ptree&);
+    boost::property_tree::ptree
+	get_jobs(const boost::property_tree::ptree&);
 
     void run();
 

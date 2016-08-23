@@ -1,11 +1,11 @@
 
 #include <manager.h>
+#include <process.h>
 #include <boost/process.hpp>
 #include <vector>
 #include <string>
 #include <iostream>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include <mutex>
 
 bool manager::py_initialised = false;
 
@@ -15,6 +15,7 @@ manager::create_python_worker(const boost::property_tree::ptree& p)
 
     std::string file;
     std::string job_id;
+    std::string name;
     std::vector<std::string> outputs;
     try {
 	file = p.get<std::string>("file");
@@ -24,18 +25,22 @@ manager::create_python_worker(const boost::property_tree::ptree& p)
     }
 
     try {
+	name = p.get<std::string>("name");
+    } catch (std::exception& e) {
+    }
+
+    try {
 	for(auto i: p.get_child("outputs")) {
 	    outputs.push_back(i.second.get_value<std::string>());
 	}
     } catch (...) {
     }
 
-    // UUID
-    boost::uuids::uuid id = uuidgen();
+    std::shared_ptr<process> proc =
+	std::shared_ptr<process>(new process());
 
-    std::shared_ptr<process> proc = std::shared_ptr<process>(new process());
-    proc->id = id;
-    proc->job_id = "n/a";
+    proc->name = name;
+    proc->job_id = job_id;
     proc->exec = "/usr/bin/python";
     proc->args = { {"python"}, {file} };
     proc->outputs = outputs;
@@ -89,22 +94,22 @@ manager::create_python_worker(const boost::property_tree::ptree& p)
     }
 
     if (out.bad()) {
-	// This 'waits' the process.
+	// Process is shared ptr, will go out of scope and be terminated.
 	return error(PROC_INIT_FAIL, "Process didn't send RUNNING");
     }
 
     if (out.eof()) {
-	// This 'waits' the process.
+	// Process is shared ptr, will go out of scope and be terminated.
 	return error(PROC_INIT_FAIL, "Process didn't send RUNNING");
     }
 
-    workers[id] = proc;
-	
-    std::ostringstream ofs;
-    ofs << id;
+    std::lock_guard<std::mutex> guard(workers_mutex);
+
+    // This keeps a reference to process.
+    workers[proc->id] = proc;
 
     boost::property_tree::ptree r;
-    r.put("id", ofs.str());
+    r.put("id", proc->id);
 
     if (proc->inputs.size() > 0) {
 	boost::property_tree::ptree ins;

@@ -40,7 +40,7 @@ def handle(msg):
 
     msg = { "div": val }
     msg = json.dumps(msg)
-    sys.stderr.write("T2: %s\n" % msg)
+    sys.stderr.write("T1: %s\n" % msg)
 
     for s in sockets:
         s.send(msg)

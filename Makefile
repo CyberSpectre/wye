@@ -8,7 +8,7 @@ CXXFLAGS += -Iprocess
 all: service
 
 
-OBJECTS=service.o manager.o python.o process.o
+OBJECTS=service.o manager.o python.o process.o worker.o
 LIBS=-lboost_system -lboost_coroutine -lpthread -lboost_python \
 	-lboost_serialization
 
@@ -21,8 +21,9 @@ depend:
 
 # DO NOT DELETE
 
-manager.o: manager.h
-python.o: manager.h
+manager.o: manager.h ./worker.h
+process.o: ./process.h ./worker.h
+python.o: manager.h ./worker.h ./process.h
 service.o: http/include/boost/http/buffered_socket.hpp
 service.o: http/include/boost/http/socket.hpp
 service.o: http/include/boost/http/reader/request.hpp
@@ -64,4 +65,5 @@ service.o: http/include/boost/http/algorithm.hpp
 service.o: http/include/boost/http/algorithm/query.hpp
 service.o: http/include/boost/http/algorithm/write.hpp
 service.o: http/include/boost/http/status_code.hpp
-service.o: http/include/boost/http/status_code-inl.hpp manager.h
+service.o: http/include/boost/http/status_code-inl.hpp manager.h ./worker.h
+worker.o: ./worker.h
