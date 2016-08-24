@@ -28,28 +28,15 @@ if job.has_key("inputs"):
     t = "inputs:"
     for a in job["inputs"]:
         print "%-20s %s" % (t, a)
+        print "%-20s   %s" % ("", job["inputs"][a])
         t = ""
+        
 if job.has_key("outputs"):
     t = "outputs:"
     for a in job["outputs"]:
-        print "%-20s %s" % (t, a)
-        t = ""
-
-sys.exit(0)
-
-table = []
-
-workers = job["workers"]
-
-for w in workers:
-    table.append([w,
-                  workers[w].get("name",""),
-                  workers[w].get("job_id",""),
-                  workers[w].get("state","")])
-
-header = ["worker id", "name", "job", "state"]
-print tabulate.tabulate(table, headers=header)
-
-
-
-
+        for x in job["outputs"][a]:
+            print "%-20s %s:" % (t, a)
+            outs = ""
+            for y in x:
+                print "%-20s   %s" % ("", y)
+            t = ""
