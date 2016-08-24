@@ -4,6 +4,7 @@ import requests
 import sys
 import marshal
 import base64
+import zmq
 
 class Worker:
 
@@ -202,4 +203,24 @@ class StreamingContext:
         
         return res.json()[id]
 
-    
+def parse_outputs(args):    
+
+    sockets = {}
+
+    ctxt = zmq.Context()
+
+    for arg in args:
+        name = arg.split(":", 1)[0]
+        outs = arg.split(":", 1)[1].split(",")
+
+        if not sockets.has_key(name):
+            sockets[name] = []
+
+        skt = ctxt.socket(zmq.PUSH)
+        for v in outs:
+            skt.connect(v)
+        sockets[name].append(skt)
+
+    return sockets
+
+

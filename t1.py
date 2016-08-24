@@ -5,32 +5,13 @@ import zmq
 import random
 import json
 import socket
+import wye
 
 print "INIT"
 
 # ---------------------------------------------------------------------------
 
-outputs = {}
-sockets = {}
-
-ctxt = zmq.Context()
-
-for arg in sys.argv[1:]:
-    name = arg.split(":", 1)[0]
-    outs = arg.split(":", 1)[1].split(",")
-
-    if not outputs.has_key(name):
-        outputs[name] = []
-
-    outputs[name].append(outs)
-
-    if not sockets.has_key(name):
-        sockets[name] = []
-
-    skt = ctxt.socket(zmq.PUSH)
-    for v in outs:
-        skt.connect(v)
-    sockets[name].append(skt)
+sockets = wye.parse_outputs(sys.argv[1:])
 
 # ---------------------------------------------------------------------------
 
