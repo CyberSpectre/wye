@@ -13,10 +13,9 @@ port = skt.bind_to_random_port("tcp://*")
 input="tcp://%s:%d" % (fqdn, port)
 
 print "INIT"
-print "INPUT:%s" % input
+print "INPUT:input:%s" % input
 print "RUNNING"
 sys.stdout.flush()
-sys.stderr.write("Done init.\n")
 
 def handle(msg):
     sys.stderr.write("Sink: %s" % json.dumps(msg) + "\n")

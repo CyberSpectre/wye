@@ -36,8 +36,11 @@ class manager {
     std::thread* background;
     boost::property_tree::ptree error(error_code, const std::string& msg);
 
-    static bool py_initialised;
-
+    boost::property_tree::ptree
+      run_python(const std::string& exec,
+		 const std::vector<std::string>& args,
+		 const boost::property_tree::ptree& p);
+      
   public:
 
     manager() {
@@ -59,6 +62,8 @@ class manager {
 	create_worker(const boost::property_tree::ptree&);
     boost::property_tree::ptree
 	create_python_worker(const boost::property_tree::ptree&);
+    boost::property_tree::ptree
+	create_lambda_worker(const boost::property_tree::ptree&);
     boost::property_tree::ptree
 	get_workers(const boost::property_tree::ptree&);
     boost::property_tree::ptree

@@ -51,9 +51,7 @@ void process::describe(boost::property_tree::ptree& p)
     if (inputs.size() > 0) {
 	boost::property_tree::ptree ins;
 	for(auto i: inputs) {
-	    boost::property_tree::ptree elt;
-	    elt.put_value(i);
-	    ins.push_back(std::make_pair("", elt));
+	    ins.put(i.first, i.second);
 	}
 	p.add_child("inputs", ins);
     }
@@ -61,10 +59,31 @@ void process::describe(boost::property_tree::ptree& p)
     if (outputs.size() > 0) {
 	boost::property_tree::ptree outs;
 	for(auto i: outputs) {
-	    boost::property_tree::ptree elt;
-	    elt.put_value(i);
-	    outs.push_back(std::make_pair("", elt));
+	    std::string name = i.first;
+
+	    boost::property_tree::ptree wal;
+
+	    for(auto j: i.second) {
+
+		boost::property_tree::ptree al;
+
+		for (auto k: j) {
+
+		    boost::property_tree::ptree elt;
+		    elt.put_value(k);
+		    al.push_back(std::make_pair("", elt));
+		    
+		}
+
+		wal.push_back(std::make_pair("", al));
+
+
+	    }
+
+	    outs.add_child(name, wal);
+
 	}
+
 	p.add_child("outputs", outs);
     }
 

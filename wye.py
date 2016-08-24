@@ -2,48 +2,74 @@
 import json
 import requests
 import sys
-
-import wye
+import marshal
+import base64
 
 class Worker:
 
-    def __init__(self, job, name, model, file, outputs=[]):
+    def __init__(self, job, name, model, params, outputs=[], parallelism=1):
         self.name = name
         self.model = model
-        self.file = file
+        self.params = params
         self.job = job
         self.outputs = outputs
+        self.parallelism = parallelism
 
     def implement(self):
 
-        req = {
-            "operation": "create-worker",
-            "name": self.name,
-            "model": self.model,
-            "file": self.file,
-            "job_id": self.job.id,
-        }
+        self.inputs = {}
+        self.ids = []
 
-        out = []
-        for v in self.outputs:
-            for v2 in v.get_inputs():
-                out.append(v2)
-        req["outputs"] = out
+        for instance in range(0, self.parallelism):
 
-        res = requests.put(self.job.context.url, data=json.dumps(req))
-        if res.status_code != 200:
-            raise RuntimeError, "Bad request"
-        res = res.json()
-        if res.has_key("inputs"):
-            self.inputs = res["inputs"]
-        else:
-            self.inputs = []
+            req = {
+                "operation": "create-worker",
+                "name": "%s-%04d" % (self.name, instance),
+                "model": self.model,
+                "job_id": self.job.id,
+            }
 
-        sys.stderr.write("Worker %s (%s) added.\n" % (req["name"], res["id"]))
+            for v in self.params:
+                req[v] = self.params[v]
 
-        self.id = res["id"]
+            if len(self.outputs) > 0:
 
-        return self.id
+                req["outputs"] = {}
+
+                for v in self.outputs:
+                    o_name = v
+
+                    wals = []
+
+                    for w in self.outputs[v]:
+
+                        elt = w[0]
+                        name = w[1]
+
+                        was = []
+                        ins = elt.get_inputs()
+
+                        for x in ins:
+                            was.append(ins[x][name])
+
+                        wals.append(was)
+
+                    req["outputs"][o_name] = wals
+
+            res = requests.put(self.job.context.url, data=json.dumps(req))
+            if res.status_code != 200:
+                raise RuntimeError, "Bad request"
+            res = res.json()
+
+            id = res["id"]
+            self.ids.append(id)
+
+            if res.has_key("inputs"):
+                self.inputs[id] = res["inputs"]
+
+            sys.stderr.write("Worker %s (%s) added.\n" % (req["name"], id))
+
+        return self.ids
 
     def get_inputs(self):
         return self.inputs
@@ -56,14 +82,20 @@ class Job:
         self.description = description
         self.workers = []
 
-    def define_python_worker(self, name, file, outputs=[]):
-        return self.define_worker(name, "python", file, outputs)
+    def define_python_worker(self, name, file, outputs=[], parallelism=1):
+        return self.define_worker(name, "python", {"file":file}, outputs,
+                                  parallelism)
+
+    def define_lambda_worker(self, name, func, outputs=[], parallelism=1):
+        func = base64.b64encode(marshal.dumps(func.func_code))
+        return self.define_worker(name, "lambda", {"lambda":func},
+                                  outputs, parallelism)
 
 #    def define_python_lambda_worker(self, name, lambda, outputs=[]):
 #        command = ["python", "-c", 
 
-    def define_worker(self, name, model, file, outputs=[]):
-        worker = Worker(self, name, model, file, outputs)
+    def define_worker(self, name, model, params, outputs=[], parallelism=1):
+        worker = Worker(self, name, model, params, outputs, parallelism)
         self.workers.append(worker)
         return worker
 

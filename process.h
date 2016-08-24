@@ -31,8 +31,11 @@ class process : public worker {
     
     std::shared_ptr<boost::process::child> proc;
 
-    std::vector<std::string> inputs;
-    std::vector<std::string> outputs;
+    //    std::map<std::string,std::string> inputs;
+    //    std::map<std::string,std::string> outputs;
+
+    //    std::vector<std::string> inputs;
+    //    std::vector<std::string> outputs;
 
     virtual void describe(boost::property_tree::ptree& p);
 

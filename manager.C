@@ -95,6 +95,9 @@ manager::create_worker(const boost::property_tree::ptree& p)
     if (model == "python")
 	return create_python_worker(p);
 
+    if (model == "lambda")
+	return create_lambda_worker(p);
+
     if (model == "lua")
 	return error(NOT_IMPLEMENTED, "Not implemented");
 

@@ -1,24 +1,24 @@
 
 #include <manager.h>
 #include <process.h>
+#include <worker.h>
 #include <boost/process.hpp>
 #include <vector>
 #include <string>
 #include <iostream>
 #include <mutex>
 
-bool manager::py_initialised = false;
-
 boost::property_tree::ptree
-manager::create_python_worker(const boost::property_tree::ptree& p)
+manager::run_python(const std::string& exec,
+		    const std::vector<std::string>& args,
+		    const boost::property_tree::ptree& p)
 {
 
-    std::string file;
     std::string job_id;
     std::string name;
     std::vector<std::string> outputs;
+
     try {
-	file = p.get<std::string>("file");
 	job_id = p.get<std::string>("job_id");
     } catch (std::exception& e) {
 	return error(INVALID_REQUEST, e.what());
@@ -29,25 +29,60 @@ manager::create_python_worker(const boost::property_tree::ptree& p)
     } catch (std::exception& e) {
     }
 
-    try {
-	for(auto i: p.get_child("outputs")) {
-	    outputs.push_back(i.second.get_value<std::string>());
-	}
-    } catch (...) {
-    }
-
     std::shared_ptr<process> proc =
 	std::shared_ptr<process>(new process());
 
     proc->name = name;
     proc->job_id = job_id;
-    proc->exec = "/usr/bin/python";
-    proc->args = { {"python"}, {file} };
-    proc->outputs = outputs;
+    proc->exec = exec;
+    proc->args = args;
 
+    try {
+	for(auto i: p.get_child("outputs")) {
 
-    for(auto i: outputs) {
-	proc->args.push_back(i);
+	    std::string name = i.first;
+
+	    boost::property_tree::ptree& wal = i.second;
+
+	    worker::address_list al;
+
+	    for(auto j: wal) {
+
+		worker::address a;
+
+		for(auto k: j.second) {
+		    a.push_back(k.second.get_value<std::string>());
+		}
+
+		al.push_back(a);
+
+	    }
+
+	    proc->outputs[name] = al;
+
+	}
+    } catch (...) {
+    }
+
+    for(auto i: proc->outputs) {
+
+	std::string name = i.first;
+
+	for(auto j: i.second) {
+
+	    std::string outs = name + ":";
+	    std::string sep = "";
+
+	    for(auto k: j) {
+		outs.append(sep);
+		outs.append(k);
+		sep = ",";
+	    }
+
+	    proc->args.push_back(outs);
+
+	}
+
     }
     
     std::cerr << "Run..." << std::endl;
@@ -59,17 +94,26 @@ manager::create_python_worker(const boost::property_tree::ptree& p)
     
     while(std::getline(out, line)) {
 
-
-	std::cerr << line << std::endl;
-
 	if (line == "INIT") {
 	    continue;
 	}
 
 	if (line.substr(0, 6) == "INPUT:") {
-	    proc->inputs.push_back(line.substr(6));
-	    std::cout << "Input " << line.substr(6) << std::endl;
+
+	    line = line.substr(6);
+
+	    int pos = line.find(":");
+	    if (pos == -1)
+		return error(PROC_INIT_FAIL,
+			     "Did not interpret process output INPUT:" + line);
+
+	    std::string name = line.substr(0, pos);
+	    std::string input = line.substr(pos + 1);
+
+	    proc->inputs[name] = input;
+		
 	    continue;
+
 	}
 
 	if (line.substr(0, 6) == "ERROR:") {
@@ -87,6 +131,8 @@ manager::create_python_worker(const boost::property_tree::ptree& p)
 	    std::cerr << "Process started successfully." << std::endl;
 	    break;
 	}
+
+	std::cerr << "Didn't understand: " << line << std::endl;
 
 	// This 'waits' the process.
 	return error(PROC_INIT_FAIL, "Bad return string: " + line);
@@ -112,12 +158,11 @@ manager::create_python_worker(const boost::property_tree::ptree& p)
     r.put("id", proc->id);
 
     if (proc->inputs.size() > 0) {
+
 	boost::property_tree::ptree ins;
 
 	for(auto i: proc->inputs) {
-	    boost::property_tree::ptree elt;
-	    elt.put_value(i);
-	    ins.push_back(std::make_pair("", elt));
+	    ins.put(i.first, i.second);
 	}
 
 	r.add_child("inputs", ins);
@@ -125,6 +170,43 @@ manager::create_python_worker(const boost::property_tree::ptree& p)
     }
 
     return r;
+
+}
+
+boost::property_tree::ptree
+manager::create_python_worker(const boost::property_tree::ptree& p)
+{
+
+    std::string file;
+
+    try {
+	file = p.get<std::string>("file");
+    } catch (std::exception& e) {
+	return error(INVALID_REQUEST, e.what());
+    }
+
+    return run_python("/usr/bin/python",
+		      { {"python"}, {file} },
+		      p);
+
+}
+
+boost::property_tree::ptree
+manager::create_lambda_worker(const boost::property_tree::ptree& p)
+{
+
+    std::string file = "lambda.py";
+    std::string lambda;
+
+    try {
+	lambda = p.get<std::string>("lambda");
+    } catch (std::exception& e) {
+	return error(INVALID_REQUEST, e.what());
+    }
+
+    return run_python("/usr/bin/python",
+		      { {"python"}, {file}, {lambda} },
+		      p);
 
 }
 

@@ -121,7 +121,30 @@ public:
 		    return;
 		}
 
-	    }
+		// Rest of this not called.
+
+		// Message received.
+                cout << "Method: " << self->method << std::endl;
+                cout << "Path: " << self->path << std::endl;
+
+                {
+                    auto host = self->message.headers().find("host");
+                    if (host != self->message.headers().end())
+                        cout << "Host: " << host->second << endl;
+                }
+
+		std::cout << "---" << std::endl;
+
+		// Write reply.
+		http::message reply;
+
+                const char body[] = "Hello World\n";
+                std::copy(body, body + sizeof(body) - 1,
+                          std::back_inserter(reply.body()));
+
+                self->socket.async_write_response(200, string_ref("OK"), reply,
+                                                  yield);
+            }
 
         } catch (system::system_error &e) {
             if (e.code() != system::error_code{asio::error::eof}) {
@@ -183,6 +206,18 @@ int main()
     boost::asio::signal_set signals(ios, SIGINT, SIGTERM);
 
     signals.async_wait(signal_handler);
+
+    /*
+    auto do_nothing = [] (const boost::system::error_code& error,
+			  int signal)
+    {
+	std::cerr << "SIGCHILD" << std::endl;
+    };
+
+    boost::asio::signal_set signals2(ios, SIGCHLD);
+
+    signals2.async_wait(do_nothing);
+    */
 
     auto work = [&acceptor, &mgr](asio::yield_context yield) {
         int counter = 0;

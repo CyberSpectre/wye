@@ -72,10 +72,13 @@ http://localhost:8080/
 ```
 wget -q -O- --post-data='{
   "operation":"create-worker",
+  "name": "source",
   "model":"python",
   "file":"source.py",
   "job_id":"asd",
-  "outputs": [ "one", "two" ]
+  "outputs": {
+      "o1": [ [ "one", "two" ], ["three", "four"] ]
+  }
 }' \
 http://localhost:8080/
 ```

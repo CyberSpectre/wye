@@ -4,9 +4,15 @@ import sys
 import zmq
 import random
 import json
-import argparse
+import socket
+import marshal
+import types
+import base64
 
 print "INIT"
+
+code = marshal.loads(base64.b64decode(sys.argv[1]))
+func = types.FunctionType(code, globals())
 
 # ---------------------------------------------------------------------------
 
@@ -15,7 +21,7 @@ sockets = {}
 
 ctxt = zmq.Context()
 
-for arg in sys.argv[1:]:
+for arg in sys.argv[2:]:
     name = arg.split(":", 1)[0]
     outs = arg.split(":", 1)[1].split(",")
 
@@ -34,16 +40,28 @@ for arg in sys.argv[1:]:
 
 # ---------------------------------------------------------------------------
 
+fqdn = socket.getfqdn()
+ctxt = zmq.Context()
+skt = ctxt.socket(zmq.PULL)
+port = skt.bind_to_random_port("tcp://*")
+input="tcp://%s:%d" % (fqdn, port)
+print "INPUT:input:%s" % input
+
+# ---------------------------------------------------------------------------
+
 print "RUNNING"
 sys.stdout.flush()
 
-sys.stderr.write("Sender is running.\n")
+def handle(msg):
+
+    msg = func(msg)
+    if msg != None:
+
+        msg = json.dumps(msg)
+        for s in sockets["output"]:
+            s.send(msg)
 
 while True:
-    time.sleep(1)
-
-    msg = { "x": random.randint(0, 10) + 1, "y": random.randint(0, 10) + 1 }
-    for s in sockets["output"]:
-        sys.stderr.write("Source: %s\n" % json.dumps(msg))
-        s.send(json.dumps(msg))
+    msg = skt.recv()
+    handle(json.loads(msg))
 

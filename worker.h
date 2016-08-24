@@ -5,6 +5,9 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <list>
+#include <map>
+#include <string>
 
 typedef std::string worker_id;
 
@@ -29,6 +32,14 @@ class worker {
     
     virtual void describe(boost::property_tree::ptree& p) = 0;
     virtual void check() = 0;
+
+    typedef std::list<std::string> address;
+    typedef std::list<address> address_list;
+    std::map<std::string, address_list> outputs;
+
+    std::map<std::string, std::string> inputs;
+
+    
 };
 
 #endif

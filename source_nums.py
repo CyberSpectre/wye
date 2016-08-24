@@ -40,10 +40,10 @@ sys.stdout.flush()
 sys.stderr.write("Sender is running.\n")
 
 while True:
-    time.sleep(1)
+    time.sleep(0.01)
 
-    msg = { "x": random.randint(0, 10) + 1, "y": random.randint(0, 10) + 1 }
+    msg = random.randint(0, 100)
+
     for s in sockets["output"]:
-        sys.stderr.write("Source: %s\n" % json.dumps(msg))
         s.send(json.dumps(msg))
 
