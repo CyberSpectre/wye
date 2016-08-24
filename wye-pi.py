@@ -7,73 +7,50 @@ url = "http://localhost:8080"
 
 context = wye.StreamingContext(url)
 
-job = context.define_job(name="job1", description="A test job")
+job = context.define_job(name="pi", description="Calculates PI")
 
-def sum_pi(x):
-    if not "parts" in globals():
-        globals()["parts"] = {}
-    if not "last" in globals():
-        globals()["last"] = 0
-    global last
-    global parts
+def pi(x):
+
+    global total
+
+    if not "total" in globals():
+        total = 0.0
+
+    total = total + (x[1] / (16.0 ** x[0]))
     
-    last = last + 1
-    parts[(x[0],x[1])] = x[2]
-    pi = 0
-    for v in parts:
-        pi = pi + parts[v]
-
-    if last % 100 == 0:
-        sys.stderr.write("PI is %-2.10f\n" % pi)
-        
+    sys.stderr.write("%2.20f\n" % total)
     return None
 
-sink = job.define_lambda_worker("sink", sum_pi)
+sink = job.define_lambda_worker("sink", pi)
 
-power = job.define_lambda_worker("power",
-                                 lambda x: (x[0], x[1], x[2] * 16 ** (-x[0])),
-                                 parallelism=1,
-                                 outputs={
-                                     "output": [(sink,"input")]
-                                 })
+def digit(k):
 
-f1 = job.define_lambda_worker("frac1",
-                              lambda x: (x, 1, 4.0 / (8.0 * x + 1)),
-                              parallelism=1,
-                              outputs={
-                                  "output": [(power,"input")]
-                              })
+    global total
 
-f2 = job.define_lambda_worker("frac2",
-                              lambda x: (x, 2, - (2.0 / (8.0 * x + 4.0))),
-                              parallelism=1,
-                              outputs={
-                                  "output": [(power,"input")]
-                              })
+    if not "total" in globals():
+        globals()["total"] = 0.0
 
-f3 = job.define_lambda_worker("frac3",
-                              lambda x: (x, 3, - (1.0 / (8.0 * x + 5.0))),
-                              parallelism=1,
-                              outputs={
-                                  "output": [(power,"input")]
-                              })
+    f1 = 4.0 / (8.0 * k + 1)
+    f2 = - (2.0 / (8.0 * k + 4.0))
+    f3 = - (1.0 / (8.0 * k + 5.0))
+    f4 = - (1.0 / (8.0 * k + 6.0))
+    
+    f = (f1 + f2 + f3 + f4)
 
-f4 = job.define_lambda_worker("frac4",
-                              lambda x: (x, 4, - (1.0 / (8.0 * x + 6.0))),
-                              parallelism=1,
-                              outputs={
-                                  "output": [(power,"input")]
-                              })
+    total = total + f
+
+    digit = (k, int(total))
+
+    total = total - int(total)
+    total = total * 16
+    
+    return digit
+
+digit = job.define_lambda_worker("digit", digit,
+                                 outputs={ "output": [(sink,"input")] })
 
 src = job.define_python_worker("source", "source_nums.py",
-                               {
-                                   "output": [
-                                       (f1,"input"),
-                                       (f2,"input"),
-                                       (f3,"input"),
-                                       (f4,"input")
-                                   ]
-                               })
+                               outputs={ "output": [ (digit,"input") ] })
 
 job_id = job.implement()
 

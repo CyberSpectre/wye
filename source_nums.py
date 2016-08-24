@@ -1,10 +1,6 @@
 
-import time
-import sys
-import zmq
-import random
+import time, sys
 import json
-import argparse
 import wye
 
 print "INIT"
@@ -20,10 +16,11 @@ sys.stdout.flush()
 
 sys.stderr.write("Sender is running.\n")
 
-while True:
-    time.sleep(0.01)
+for i in range(0, 100):
 
-    msg = random.randint(0, 100)
+    time.sleep(0.05)
+
+    msg = i
 
     for s in sockets["output"]:
         s.send(json.dumps(msg))
