@@ -85,7 +85,6 @@ class Job:
         self.workers = []
 
     def define_python_worker(self, name, file, outputs=[], parallelism=1):
-        file = os.path.abspath(file)
         return self.define_worker(name, "python", {"file":file}, outputs,
                                   parallelism)
 
