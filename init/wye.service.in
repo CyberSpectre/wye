@@ -1,11 +1,11 @@
 
 [Unit]
-Description=cyberprobe service
-Documentation=http://cyberprobe.sourceforge.net/cyberprobe.html
+Description=wye streaming service
+Documentation=http://wye.sourceforge.net/
 
 [Service]
-PIDFile=/var/run/cyberprobe.pid
-ExecStart=@bindir@/cyberprobe @sysconfdir@/cyberprobe.cfg
+PIDFile=/var/run/wye.pid
+ExecStart=@bindir@/wye-service
 
 [Install]
 WantedBy=multi-user.target
