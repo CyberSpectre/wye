@@ -27,7 +27,7 @@ if job.has_key("args"):
 if job.has_key("inputs"):
     t = "inputs:"
     for a in job["inputs"]:
-        print "%-20s %s" % (t, a)
+        print "%-20s %s:" % (t, a)
         print "%-20s   %s" % ("", job["inputs"][a])
         t = ""
         
