@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+
+import wye.context
+import tabulate
+
+context = wye.context.StreamingContext()
+
+workers = context.get_workers()
+
+table = []
+
+for w in workers:
+    table.append([w,
+                  workers[w].get("name",""),
+                  workers[w].get("job_id",""),
+                  workers[w].get("state","")])
+
+header = ["id", "name", "job", "state"]
+print tabulate.tabulate(table, headers=header)
+
+
+

@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+
+import wye.context
+import tabulate
+import sys
+
+if len(sys.argv) != 2:
+    sys.stderr.write("Usage:\n\tdelete-worker <worker>\n")
+    sys.exit(1)
+
+context = wye.context.StreamingContext()
+
+context.delete_worker(sys.argv[1])
+
