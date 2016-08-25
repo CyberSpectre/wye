@@ -1,5 +1,5 @@
 
-SUBDIRS = src python utils
+SUBDIRS = src python utils init
 
 ACLOCAL_AMFLAGS = -I m4
 

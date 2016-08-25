@@ -1,0 +1,12 @@
+
+[Unit]
+Description=cyberprobe service
+Documentation=http://cyberprobe.sourceforge.net/cyberprobe.html
+
+[Service]
+PIDFile=/var/run/cyberprobe.pid
+ExecStart=/tmp/asd/bin/cyberprobe /tmp/asd/etc/cyberprobe.cfg
+
+[Install]
+WantedBy=multi-user.target
+

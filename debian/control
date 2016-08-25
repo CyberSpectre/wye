@@ -1,0 +1,22 @@
+Source: wye
+Maintainer: Cyber MacGeddon <cybermaggedon@gmail.com>
+Section: unknown
+Priority: optional
+Standards-Version: 3.9.2
+Build-Depends: python2.7,  
+  libboost-dev, python-minimal, python2.7-minimal,
+  libc6, libreadline6
+Homepage: http://wye.sourceforge.net/
+
+Package: wye
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description:
+  Wye is a stream processing framework for medium-to-low latency processing of
+  data.  Wye is a much simpler framework than other big data frameworks, which
+  makes it much simpler to get stream processing up and running.
+
+  It currently operates a single host framework, although there are ambitious
+  plans to expand to large clusters.
+
+  Please see documentation in /usr/share/doc/wye.
