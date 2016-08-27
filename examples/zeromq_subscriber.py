@@ -25,7 +25,6 @@ def handle(msg):
     for s in sockets["output"]:
         s.send(msg)
     
-
 while True:
     msg = skt.recv()
     handle(msg)

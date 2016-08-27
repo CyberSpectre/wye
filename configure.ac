@@ -66,7 +66,6 @@ AC_FUNC_MALLOC
 AC_CHECK_FUNCS([dup2 getcwd gettimeofday memset pathconf setenv socket])
 
 AC_CONFIG_FILES([Makefile src/Makefile python/Makefile utils/Makefile
-	         init/Makefile])
-
+	         init/Makefile examples/Makefile])
 AC_OUTPUT
 
