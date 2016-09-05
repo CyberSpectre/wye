@@ -1,6 +1,6 @@
 
 PACKAGE=wye
-VERSION=0.01
+VERSION=0.03
 
 deb:
 	rm -rf ${PACKAGE}-${VERSION}

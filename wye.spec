@@ -1,5 +1,5 @@
 Name:		wye
-Version:	0.01
+Version:	0.03
 Release:	1%{?dist}
 Summary:	Stream processing framework
 Group:		Applications/Internet
