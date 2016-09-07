@@ -23,19 +23,13 @@ class process : public worker {
     virtual ~process();
 
     boost::process::pistream& get_output() {
-	return proc->get_stdout();
+	return proc->get_output(3);
     }
     
     std::string exec;
     std::vector<std::string> args;
     
-    std::shared_ptr<boost::process::child> proc;
-
-    //    std::map<std::string,std::string> inputs;
-    //    std::map<std::string,std::string> outputs;
-
-    //    std::vector<std::string> inputs;
-    //    std::vector<std::string> outputs;
+    std::shared_ptr<boost::process::posix_child> proc;
 
     virtual void describe(boost::property_tree::ptree& p);
 

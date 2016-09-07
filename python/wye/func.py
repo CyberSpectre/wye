@@ -1,6 +1,6 @@
 
 import time
-import sys
+import sys, os
 import zmq
 import json
 import socket
@@ -25,7 +25,9 @@ def run_lambda(lam, outputs):
 
     # -----------------------------------------------------------------------
 
-    sys.stdout.write("INIT\n")
+    ctrl = os.fdopen(3, 'w')
+
+    ctrl.write("INIT\n")
 
     lam = marshal.loads(base64.b64decode(lam))
     func = types.FunctionType(lam, globals())
@@ -39,10 +41,10 @@ def run_lambda(lam, outputs):
     skt = ctxt.socket(zmq.PULL)
     port = skt.bind_to_random_port("tcp://*")
     input="tcp://%s:%d" % (fqdn, port)
-    sys.stdout.write("INPUT:input:%s\n" % input)
+    ctrl.write("INPUT:input:%s\n" % input)
 
-    sys.stdout.write("RUNNING\n")
-    sys.stdout.flush()
+    ctrl.write("RUNNING\n")
+    ctrl.flush()
 
     # -----------------------------------------------------------------------
 
@@ -56,17 +58,19 @@ def run_generator(lam, outputs):
     global func
     global sockets
 
+    ctrl = os.fdopen(3, 'w')
+
     # -----------------------------------------------------------------------
 
-    sys.stdout.write("INIT\n")
+    ctrl.write("INIT\n")
 
     lam = marshal.loads(base64.b64decode(lam))
     func = types.FunctionType(lam, globals())
 
     sockets = wye.parse_outputs(outputs)
 
-    sys.stdout.write("RUNNING\n")
-    sys.stdout.flush()
+    ctrl.write("RUNNING\n")
+    ctrl.flush()
 
     # -----------------------------------------------------------------------
 
@@ -76,7 +80,7 @@ def run_generator(lam, outputs):
 
         msg = next(gen)
         msg = json.dumps(msg)
-        sys.stderr.flush()
+
         for s in sockets["output"]:
             s.send(msg)
 

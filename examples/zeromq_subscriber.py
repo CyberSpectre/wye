@@ -9,14 +9,15 @@ import wye.context
 
 # ---------------------------------------------------------------------------
 
-print "INIT"
+ctrl = os.fdopen(3, 'w')
+ctrl.write("INIT\n")
 sockets = wye.context.parse_outputs(sys.argv[1:])
 ctxt = zmq.Context()
 skt = ctxt.socket(zmq.SUB)
 port = skt.connect("tcp://localhost:5555")
 skt.setsockopt(zmq.SUBSCRIBE, "")
-print "RUNNING"
-sys.stdout.flush()
+ctrl.write("RUNNING\n")
+ctrl.flush()
 
 # ---------------------------------------------------------------------------
 

@@ -4,6 +4,7 @@ import sys
 import zmq
 import socket
 import json
+import os
 
 fqdn = socket.getfqdn()
 ctxt = zmq.Context()
@@ -12,10 +13,11 @@ port = skt.bind_to_random_port("tcp://*")
 
 input="tcp://%s:%d" % (fqdn, port)
 
-print "INIT"
-print "INPUT:input:%s" % input
-print "RUNNING"
-sys.stdout.flush()
+ctrl = os.fdopen(3, 'w')
+ctrl.write("INIT\n")
+ctrl.write("INPUT:input:%s\n" % input)
+ctrl.write("RUNNING\n")
+ctrl.flush()
 
 def handle(msg):
     sys.stderr.write("Sink: %s" % json.dumps(msg) + "\n")

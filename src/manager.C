@@ -32,8 +32,6 @@ manager::handle(const boost::property_tree::ptree& p)
       throw std::runtime_error("Must supply an 'operation' value");
   }
 
-  std::cerr << "Operation: " << op << std::endl;
-
   if (op == "create-worker")
       return create_worker(p);
 

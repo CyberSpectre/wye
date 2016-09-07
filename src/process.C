@@ -5,13 +5,17 @@
 #include <boost/uuid/uuid_io.hpp>
 
 void process::run() {
-  boost::process::context ctx;
-  ctx.stdout_behavior = boost::process::capture_stream();
-  ctx.stderr_behavior = boost::process::inherit_stream();
+  boost::process::posix_context ctx;
+  ctx.output_behavior.insert(boost::process::behavior_map::value_type(STDOUT_FILENO,
+								      boost::process::inherit_stream()));
+  ctx.output_behavior.insert(boost::process::behavior_map::value_type(STDERR_FILENO,
+								      boost::process::inherit_stream()));
+  ctx.output_behavior.insert(boost::process::behavior_map::value_type(3,
+								      boost::process::capture_stream()));
   ctx.environment = boost::process::self::get_environment();
 
-  boost::process::child c = boost::process::launch(exec, args, ctx);
-  proc = std::shared_ptr<boost::process::child>(new boost::process::child(c));
+  boost::process::posix_child c = boost::process::posix_launch(exec, args, ctx);
+  proc = std::shared_ptr<boost::process::posix_child>(new boost::process::posix_child(c));
 
 }
 

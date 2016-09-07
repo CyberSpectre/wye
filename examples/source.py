@@ -6,13 +6,16 @@ import random
 import json
 import argparse
 import wye
+import os
 
 # ---------------------------------------------------------------------------
 
-print "INIT"
+ctrl = os.fdopen(3, 'w')
+
+ctrl.write("INIT\n")
 sockets = wye.parse_outputs(sys.argv[1:])
-print "RUNNING"
-sys.stdout.flush()
+ctrl.write("RUNNING\n")
+ctrl.flush()
 sys.stderr.write("Sender is running.\n")
 
 # ---------------------------------------------------------------------------

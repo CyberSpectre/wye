@@ -6,19 +6,21 @@ import random
 import json
 import socket
 import wye
+import os
 
 # ---------------------------------------------------------------------------
 
-print "INIT"
+ctrl = os.fdopen(3, 'w')
+ctrl.write("INIT\n")
 sockets = wye.parse_outputs(sys.argv[1:])
 fqdn = socket.getfqdn()
 ctxt = zmq.Context()
 skt = ctxt.socket(zmq.PULL)
 port = skt.bind_to_random_port("tcp://*")
 input="tcp://%s:%d" % (fqdn, port)
-print "INPUT:input:%s" % input
-print "RUNNING"
-sys.stdout.flush()
+ctrl.write("INPUT:input:%s\n" % input)
+ctrl.write("RUNNING\n")
+ctrl.flush()
 sys.stderr.write("T1 is running.\n")
 
 # ---------------------------------------------------------------------------
