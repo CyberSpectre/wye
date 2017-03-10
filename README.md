@@ -21,6 +21,19 @@ Lots of ambitions to expand the framework into:
 
 ## Getting started
 
+
+You will need to install python pip.
+```
+dnf install python-pip
+pip install tabulate
+```
+
+Set your $PYTHONPATH to the python directory of the Wye repo:
+``` 
+export PYTHONPATH=~/git/wye/python/
+```
+
+
 Compile the framework:
 
 ```
@@ -34,14 +47,14 @@ Run the service daemon.  This starts a service on port 8080:
 ```
 # For running the examples, make sure wye-service is running in the
 # examples directory.
-cd .../examples/
+cd examples/
 wye-service
 ```
 
 In a separate terminal, invoke a stream processing job:
 
 ```
-cd .../examples/
+cd examples/
 
 # Simple test, does some arithmetic.
 python run_test

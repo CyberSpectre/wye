@@ -1,8 +1,13 @@
 
 bin_PROGRAMS = wye-service
 
-wye_service_SOURCES = manager.C process.C service.C python.C worker.C \
-	manager.h process.h worker.h ../process ../http
+wye_service_SOURCES = manager.C \
+			job.C \
+			process.C \
+			connection.C \
+			python.C \
+			worker.C \
+            main.C
 
 ACLOCAL_AMFLAGS = -I m4
 

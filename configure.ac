@@ -12,12 +12,15 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CXX
 
 AC_CHECK_LIB([boost_coroutine], [main], [],
-	     [AC_MSG_ERROR(Library boost_coroutine missing.)])
+      	     [AC_MSG_ERROR(Library boost_coroutine missing.)])
+AC_CHECK_LIB([boost_program_options], [main], [],
+             [AC_MSG_ERROR(Library boost_program_options.)])
 AC_CHECK_LIB([boost_serialization], [main], [],
              [AC_MSG_ERROR(Library boost_serialization missing.)])
 AC_CHECK_LIB([boost_system], [main], [],
              [AC_MSG_ERROR(Library boost_system missing.)])
-AC_CHECK_LIB([pthread], [main], [], [AC_MSG_ERROR(Library pthread missing.)])
+AC_CHECK_LIB([pthread], [main], [],
+             [AC_MSG_ERROR(Library pthread missing.)])
 
 # pkg-config
 PKG_PROG_PKG_CONFIG

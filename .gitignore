@@ -1,8 +1,8 @@
 *~
 service
 *.o
+*.pyc
 Makefile.bak
-wye.pyc
 Makefile
 Makefile.in
 config.h

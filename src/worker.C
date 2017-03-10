@@ -1,11 +1,14 @@
 
 #include <worker.h>
+
 #include <boost/uuid/uuid_io.hpp>
+
 
 boost::uuids::random_generator worker::uuidgen;
 
-worker::worker() {
 
+worker::worker()
+{
     // UUID
     boost::uuids::uuid u = uuidgen();
 
@@ -14,6 +17,5 @@ worker::worker() {
     id = ofs.str();
 
     state = RUNNING;
-    
 }
 
