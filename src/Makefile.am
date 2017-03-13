@@ -5,7 +5,6 @@ wye_service_SOURCES = manager.C \
 			job.C \
 			process.C \
 			connection.C \
-			python.C \
 			worker.C \
             main.C
 
