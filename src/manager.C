@@ -471,7 +471,8 @@ manager::create_python_worker(const boost::property_tree::ptree& p)
     }
     catch (std::exception& e)
     {
-        return error(INVALID_REQUEST, e.what());
+        // Uncomment if "name" becomes compulsary 
+        // return error(INVALID_REQUEST, e.what());
     }
         
     try
@@ -571,7 +572,8 @@ manager::create_lambda_worker(const boost::property_tree::ptree& p)
     }
     catch (std::exception& e)
     {
-        return error(INVALID_REQUEST, e.what());
+        // Uncomment if "name" becomes compulsary
+        // return error(INVALID_REQUEST, e.what());
     }
     
     try
