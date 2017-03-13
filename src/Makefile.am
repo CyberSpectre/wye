@@ -4,6 +4,8 @@ bin_PROGRAMS = wye-service
 wye_service_SOURCES = manager.C \
 			job.C \
 			process.C \
+			python_process.C \
+			lambda_process.C \
 			connection.C \
 			worker.C \
             main.C

@@ -33,9 +33,6 @@ class manager
 
     boost::property_tree::ptree error(error_code, const std::string& msg);
 
-    boost::property_tree::ptree
-        run_python(std::shared_ptr<process>, const boost::property_tree::ptree& p);
-      
   public:
     manager();
 
@@ -52,12 +49,6 @@ class manager
 
     boost::property_tree::ptree
         create_worker(const boost::property_tree::ptree&);
-
-    boost::property_tree::ptree
-        create_python_worker(const boost::property_tree::ptree&);
-
-    boost::property_tree::ptree
-        create_lambda_worker(const boost::property_tree::ptree&);
 
     boost::property_tree::ptree
         get_workers(const boost::property_tree::ptree&);
