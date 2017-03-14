@@ -157,7 +157,7 @@ manager::create_worker(const boost::property_tree::ptree& p)
         // Keep a map of the processes.
         workers[proc->id] = proc;
 
-        std::cerr << "Run " + model + " job..." << std::endl;
+        std::cerr << "Running " + model + " process..." << std::endl;
         return proc->run_process(p);
     }
     catch (...)
@@ -386,10 +386,19 @@ void manager::run()
 
             std::lock_guard<std::mutex> guard(workers_mutex);
 
-            for(auto v: workers)
+            for(auto v = workers.begin(); v != workers.end(); ++v)
             {
                 // Check the worker process is still alive
-                v.second->check();
+                if(v->second->is_running() == false)
+                {
+                    std::string id = v->second->id;
+
+                    std::cout << "worker id: " << id << " failed" << std::endl;
+
+                    workers.erase(v);
+                    v = workers.begin();
+                }
+
             }
         }
     };

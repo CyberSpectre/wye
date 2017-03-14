@@ -36,7 +36,7 @@ class worker
     worker_state state;
 
     virtual void describe(boost::property_tree::ptree& p) = 0;
-    virtual void check() = 0;
+    virtual bool is_running() = 0;
 
     typedef std::list<std::string> address;
     typedef std::list<address> address_list;

@@ -35,7 +35,7 @@ class process : public worker
 
     virtual void describe(boost::property_tree::ptree& p);
 
-    virtual void check();
+    virtual bool is_running();
 };
 
 #endif

@@ -139,11 +139,19 @@ void process::describe(boost::property_tree::ptree& p)
 }
 
 
-void process::check()
+bool process::is_running()
 {
+    //      ************ IMPORTANT **************
+    // The following functionality doesn't work correctly.
+    // The language specific run_process() loops are ending
+    // so for now always return true until this can be fixed.
+    return true;
+
+
     if (state != RUNNING)
     {
-        return;
+        std::cerr << "Process " << id << " not RUNNING." << std::endl;
+        return false;
     }
 
     if (proc == nullptr)
@@ -160,14 +168,20 @@ void process::check()
             std::cerr << "Process " << id << " has stopped." << std::endl;
             state = STOPPED;
             proc = nullptr;
+
+            return false;
         }
     }
     catch (...)
     {
         // Assume exception is that process no longer exists.
-        std::cerr << "Process " << id << " has stopped." << std::endl;
+        std::cerr << "Process " << id << " appears to no longer exist." << std::endl;
         state = STOPPED;
         proc = nullptr;
+
+        return false;
     }
+
+    return true;
 }
 
