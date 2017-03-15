@@ -141,13 +141,6 @@ void process::describe(boost::property_tree::ptree& p)
 
 bool process::is_running()
 {
-    //      ************ IMPORTANT **************
-    // The following functionality doesn't work correctly.
-    // The language specific run_process() loops are ending
-    // so for now always return true until this can be fixed.
-    return true;
-
-
     if (state != RUNNING)
     {
         std::cerr << "Process " << id << " not RUNNING." << std::endl;
@@ -161,14 +154,11 @@ bool process::is_running()
 
     try
     {
-        boost::process::status stat = proc->wait_nohang();
+        int pid_status;
 
-        if (stat.exited())
+        if (::waitpid(proc->get_id(), &pid_status, WNOHANG) == -1)
         {
-            std::cerr << "Process " << id << " has stopped." << std::endl;
-            state = STOPPED;
-            proc = nullptr;
-
+            boost::throw_exception(boost::system::system_error(boost::system::error_code(errno, boost::system::get_system_category()), "Failed process id: " + proc->get_id()));
             return false;
         }
     }

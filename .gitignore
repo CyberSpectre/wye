@@ -2,6 +2,7 @@
 service
 *.o
 *.pyc
+*.swp
 Makefile.bak
 Makefile
 Makefile.in

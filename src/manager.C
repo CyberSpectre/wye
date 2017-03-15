@@ -376,7 +376,7 @@ void manager::run()
 {
     // Manager background thread body.
     // This occassionally checks the status of all worker processes
-    // It doesn't do anything else (or handle any failures) at this time. 
+    // and removes any workers for which the process has died.
 
     auto body = [this] ()
     {
@@ -386,7 +386,7 @@ void manager::run()
 
             std::lock_guard<std::mutex> guard(workers_mutex);
 
-            for(auto v = workers.begin(); v != workers.end(); ++v)
+            for(auto v = workers.begin(); v != workers.end(); v++)
             {
                 // Check the worker process is still alive
                 if(v->second->is_running() == false)
@@ -395,8 +395,11 @@ void manager::run()
 
                     std::cout << "worker id: " << id << " failed" << std::endl;
 
-                    workers.erase(v);
-                    v = workers.begin();
+                    workers.erase(v++);
+
+                    // break as the erase affects the map so need
+                    // to reset the iterator to avoid a core dump 
+                    break;
                 }
 
             }
