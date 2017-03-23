@@ -3,14 +3,18 @@
 import sys
 import wye
 
+
 url = "http://localhost:8080"
 
 context = wye.Context(url)
 
 job = context.define_job(name="job1", description="A test job")
 
+# Create 2 threads/instances running sink.py
 sink = job.define_python_worker("sink", "sink.py", parallelism=2)
-sink2 = job.define_python_worker("sink2", "sink.py", parallelism=2)
+
+# Create a further 3 threads/instances running sink.py
+sink2 = job.define_python_worker("sink2", "sink.py", parallelism=3)
 
 trans1 = job.define_python_worker("trans1", "t1.py", parallelism=2)
 trans1.connect("output", [(sink,"input"),(sink2,"input")])

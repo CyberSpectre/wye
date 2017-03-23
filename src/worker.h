@@ -9,17 +9,25 @@
 #include <map>
 #include <string>
 
+
 typedef std::string worker_id;
 
-enum worker_state {
+
+enum worker_state
+{
     RUNNING, STOPPED
 };
 
-class worker {
+
+class worker
+{
   private:
     static boost::uuids::random_generator uuidgen;
 
   public:
+
+    worker();
+    virtual ~worker() {}
 
     worker_id id;
     std::string name;
@@ -27,19 +35,14 @@ class worker {
     
     worker_state state;
 
-    virtual ~worker() {}
-    worker();
-    
     virtual void describe(boost::property_tree::ptree& p) = 0;
-    virtual void check() = 0;
+    virtual bool is_running() = 0;
 
     typedef std::list<std::string> address;
     typedef std::list<address> address_list;
     std::map<std::string, address_list> outputs;
 
     std::map<std::string, std::string> inputs;
-
-    
 };
 
 #endif
