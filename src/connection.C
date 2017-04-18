@@ -1,27 +1,22 @@
 #include <connection.h>
 
 #include <boost/http/algorithm.hpp>
-#include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-
+#include <boost/property_tree/ptree.hpp>
 
 using namespace std;
 using namespace boost;
 
-
-connection::connection(asio::io_service &ios, int counter, manager& mgr)
-    : socket(ios),
-      counter(counter),
-      mgr(mgr)
+connection::connection(asio::io_service& ios, int counter, manager& mgr)
+    : socket(ios), counter(counter), mgr(mgr)
 {
 }
 
-
-std::shared_ptr<connection> connection::make_connection(asio::io_service &ios, int counter, manager& m)
+std::shared_ptr<connection> connection::make_connection(asio::io_service& ios,
+                                                        int counter, manager& m)
 {
     return std::shared_ptr<connection>{new connection{ios, counter, m}};
 }
-
 
 void connection::operator()(asio::yield_context yield)
 {
@@ -31,10 +26,8 @@ void connection::operator()(asio::yield_context yield)
         while (self->socket.is_open())
         {
             // Read request.
-            self->socket.async_read_request(self->method,
-                                            self->path,
-                                            self->message,
-                                            yield);
+            self->socket.async_read_request(self->method, self->path,
+                                            self->message, yield);
 
             if (http::request_continue_required(self->message))
             {
@@ -62,7 +55,8 @@ void connection::operator()(asio::yield_context yield)
 
             {
                 std::string body;
-                body.assign(self->message.body().begin(), self->message.body().end());
+                body.assign(self->message.body().begin(),
+                            self->message.body().end());
                 std::istringstream in(body);
 
                 try
@@ -74,13 +68,14 @@ void connection::operator()(asio::yield_context yield)
                     // Write reply.
                     http::message reply;
 
-                    const char body[] = "Your client sent a message this server could not interpret.";
-                    std::copy(body, body + sizeof(body) - 1, std::back_inserter(reply.body()));
+                    const char body[] =
+                        "Your client sent a message this server could not "
+                        "interpret.";
+                    std::copy(body, body + sizeof(body) - 1,
+                              std::back_inserter(reply.body()));
 
-                    self->socket.async_write_response(400,
-                                                         string_ref("Bad Request"),
-                                                         reply,
-                                                         yield);
+                    self->socket.async_write_response(
+                        400, string_ref("Bad Request"), reply, yield);
 
                     return;
                 }
@@ -98,14 +93,11 @@ void connection::operator()(asio::yield_context yield)
 
                     std::cerr << "Error: " << errormsg << std::endl;
 
-                    std::copy(errormsg.begin(),
-                              errormsg.end(),
+                    std::copy(errormsg.begin(), errormsg.end(),
                               std::back_inserter(reply.body()));
 
-                    self->socket.async_write_response(500,
-                                                        string_ref("Internal Server Error"),
-                                                        reply,
-                                                        yield);
+                    self->socket.async_write_response(
+                        500, string_ref("Internal Server Error"), reply, yield);
 
                     return;
                 }
@@ -119,14 +111,11 @@ void connection::operator()(asio::yield_context yield)
 
                 std::string repbody = out.str();
 
-                std::copy(repbody.begin(),
-                          repbody.end(),
+                std::copy(repbody.begin(), repbody.end(),
                           std::back_inserter(reply.body()));
 
-                self->socket.async_write_response(200,
-                                                    string_ref("OK"),
-                                                    reply,
-                                                    yield);
+                self->socket.async_write_response(200, string_ref("OK"), reply,
+                                                  yield);
 
                 return;
             }
@@ -134,7 +123,7 @@ void connection::operator()(asio::yield_context yield)
 
         cout << "socket closed" << std::endl;
     }
-    catch (system::system_error &e)
+    catch (system::system_error& e)
     {
         if (e.code() != system::error_code{asio::error::eof})
         {
@@ -143,15 +132,13 @@ void connection::operator()(asio::yield_context yield)
 
         return;
     }
-    catch (std::exception &e)
+    catch (std::exception& e)
     {
         throw e;
     }
 }
 
-
-asio::ip::tcp::socket &connection::tcp_layer()
+asio::ip::tcp::socket& connection::tcp_layer()
 {
     return socket.next_layer();
 }
-

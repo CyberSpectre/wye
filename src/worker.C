@@ -3,9 +3,7 @@
 
 #include <boost/uuid/uuid_io.hpp>
 
-
 boost::uuids::random_generator worker::uuidgen;
-
 
 worker::worker()
 {
@@ -18,4 +16,3 @@ worker::worker()
 
     state = RUNNING;
 }
-

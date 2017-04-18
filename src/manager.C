@@ -1,31 +1,25 @@
 
-#include <iostream>
-#include <thread>
-#include <mutex>
 #include <boost/uuid/uuid_io.hpp>
+#include <iostream>
+#include <mutex>
+#include <thread>
 
 #include <lambda_process.h>
 #include <manager.h>
 #include <python_process.h>
 
-
-std::map<error_code,std::string> error_string =
-{
+std::map<error_code, std::string> error_string = {
     {OK, "OK"},
     {NOT_IMPLEMENTED, "NOT_IMPLEMENTED"},
     {INVALID_REQUEST, "INVALID_REQUEST"},
-    {PROC_INIT_FAIL, "PROCESSING_INIT_FAIL"}
-};
-
+    {PROC_INIT_FAIL, "PROCESSING_INIT_FAIL"}};
 
 manager::manager()
 {
     background = nullptr;
 }
 
-
-boost::property_tree::ptree
-manager::error(error_code c, const std::string& msg)
+boost::property_tree::ptree manager::error(error_code c, const std::string& msg)
 {
     boost::property_tree::ptree p;
     p.put("error_code", error_string[c]);
@@ -33,9 +27,8 @@ manager::error(error_code c, const std::string& msg)
     return p;
 }
 
-       
-boost::property_tree::ptree
-manager::handle(const boost::property_tree::ptree& p)
+boost::property_tree::ptree manager::handle(
+    const boost::property_tree::ptree& p)
 {
     std::string op;
 
@@ -86,15 +79,14 @@ manager::handle(const boost::property_tree::ptree& p)
     return error(INVALID_REQUEST, "Operation '" + op + "' not recognised.");
 }
 
-
-boost::property_tree::ptree
-manager::get_workers(const boost::property_tree::ptree& p)
+boost::property_tree::ptree manager::get_workers(
+    const boost::property_tree::ptree& p)
 {
     boost::property_tree::ptree r;
 
     std::lock_guard<std::mutex> guard(workers_mutex);
 
-    for (auto v: workers)
+    for (auto v : workers)
     {
         boost::property_tree::ptree w;
 
@@ -106,19 +98,18 @@ manager::get_workers(const boost::property_tree::ptree& p)
     return r;
 }
 
-
-boost::property_tree::ptree
-manager::create_worker(const boost::property_tree::ptree& p)
+boost::property_tree::ptree manager::create_worker(
+    const boost::property_tree::ptree& p)
 {
     std::string model;
 
     try
     {
-	    model = p.get<std::string>("model");
+        model = p.get<std::string>("model");
     }
     catch (...)
     {
-	    return error(INVALID_REQUEST, "Must supply a 'model' value");
+        return error(INVALID_REQUEST, "Must supply a 'model' value");
     }
 
     std::shared_ptr<process> proc;
@@ -141,14 +132,15 @@ manager::create_worker(const boost::property_tree::ptree& p)
         }
         else
         {
-            return error(INVALID_REQUEST, "Worker model '" + model + "' not known");
+            return error(INVALID_REQUEST,
+                         "Worker model '" + model + "' not known");
         }
     }
-    catch (std::exception &e)
+    catch (std::exception& e)
     {
         std::cerr << e.what() << std::endl;
         return error(INVALID_REQUEST, e.what());
-    }    
+    }
 
     try
     {
@@ -167,26 +159,25 @@ manager::create_worker(const boost::property_tree::ptree& p)
     }
 }
 
-
-boost::property_tree::ptree
-manager::delete_worker(const boost::property_tree::ptree& p)
+boost::property_tree::ptree manager::delete_worker(
+    const boost::property_tree::ptree& p)
 {
     std::string id;
 
     try
     {
-	    id = p.get<std::string>("id");
+        id = p.get<std::string>("id");
     }
     catch (...)
     {
-	    return error(INVALID_REQUEST, "Must supply an 'id' value");
+        return error(INVALID_REQUEST, "Must supply an 'id' value");
     }
 
     std::lock_guard<std::mutex> guard(workers_mutex);
 
     if (workers.find(id) == workers.end())
     {
-	    return error(INVALID_REQUEST, "Worker '" + id + "' not known.");
+        return error(INVALID_REQUEST, "Worker '" + id + "' not known.");
     }
 
     workers.erase(id);
@@ -196,16 +187,15 @@ manager::delete_worker(const boost::property_tree::ptree& p)
     return r;
 }
 
-
-boost::property_tree::ptree
-manager::create_job(const boost::property_tree::ptree& p)
+boost::property_tree::ptree manager::create_job(
+    const boost::property_tree::ptree& p)
 {
     std::string name;
     std::string description;
 
     try
     {
-	    name = p.get<std::string>("name");
+        name = p.get<std::string>("name");
     }
     catch (...)
     {
@@ -214,7 +204,7 @@ manager::create_job(const boost::property_tree::ptree& p)
 
     try
     {
-	    description = p.get<std::string>("description");
+        description = p.get<std::string>("description");
     }
     catch (...)
     {
@@ -235,19 +225,18 @@ manager::create_job(const boost::property_tree::ptree& p)
     return r;
 }
 
-
-boost::property_tree::ptree
-manager::delete_job(const boost::property_tree::ptree& p)
+boost::property_tree::ptree manager::delete_job(
+    const boost::property_tree::ptree& p)
 {
     std::string id;
 
     try
     {
-	    id = p.get<std::string>("id");
+        id = p.get<std::string>("id");
     }
     catch (...)
     {
-	    return error(INVALID_REQUEST, "Must supply an 'id' value");
+        return error(INVALID_REQUEST, "Must supply an 'id' value");
     }
 
     std::lock_guard<std::mutex> jguard(jobs_mutex);
@@ -263,18 +252,18 @@ manager::delete_job(const boost::property_tree::ptree& p)
     // deleted.
     while (1)
     {
-	    bool changed = false;
-	    for(auto v: workers)
+        bool changed = false;
+        for (auto v : workers)
         {
             if (v.second->job_id == id)
             {
-		        changed = true;
-		        workers.erase(v.first);
-		        break;
-	        }
-	    }
+                changed = true;
+                workers.erase(v.first);
+                break;
+            }
+        }
 
-	    if (!changed)
+        if (!changed)
         {
             break;
         }
@@ -287,17 +276,15 @@ manager::delete_job(const boost::property_tree::ptree& p)
     return r;
 }
 
-
-boost::property_tree::ptree
-manager::get_jobs(const boost::property_tree::ptree& p)
+boost::property_tree::ptree manager::get_jobs(
+    const boost::property_tree::ptree& p)
 {
     boost::property_tree::ptree r;
 
     std::lock_guard<std::mutex> guard(jobs_mutex);
 
-    for(auto v: jobs)
+    for (auto v : jobs)
     {
-
         boost::property_tree::ptree e;
         if (v.second.name != "")
         {
@@ -315,9 +302,8 @@ manager::get_jobs(const boost::property_tree::ptree& p)
     return r;
 }
 
-
-boost::property_tree::ptree
-manager::get_job(const boost::property_tree::ptree& p)
+boost::property_tree::ptree manager::get_job(
+    const boost::property_tree::ptree& p)
 {
     std::string id;
 
@@ -340,18 +326,18 @@ manager::get_job(const boost::property_tree::ptree& p)
     boost::property_tree::ptree w;
 
     std::lock_guard<std::mutex> wguard(workers_mutex);
-    
-    for(auto v: workers)
+
+    for (auto v : workers)
     {
-	    if (v.second->job_id == id)
+        if (v.second->job_id == id)
         {
             boost::property_tree::ptree e;
             v.second->describe(e);
-	    
+
             w.add_child(v.first, e);
         }
     }
-    
+
     boost::property_tree::ptree r;
 
     job& j = jobs[id];
@@ -371,25 +357,23 @@ manager::get_job(const boost::property_tree::ptree& p)
     return r;
 }
 
-
 void manager::run()
 {
     // Manager background thread body.
     // This occassionally checks the status of all worker processes
     // and removes any workers for which the process has died.
 
-    auto body = [this] ()
-    {
+    auto body = [this]() {
         while (1)
         {
             std::this_thread::sleep_for(std::chrono::seconds(1));
 
             std::lock_guard<std::mutex> guard(workers_mutex);
 
-            for(auto v = workers.begin(); v != workers.end(); v++)
+            for (auto v = workers.begin(); v != workers.end(); v++)
             {
                 // Check the worker process is still alive
-                if(v->second->is_running() == false)
+                if (v->second->is_running() == false)
                 {
                     std::string id = v->second->id;
 
@@ -398,10 +382,9 @@ void manager::run()
                     workers.erase(v++);
 
                     // break as the erase affects the map so need
-                    // to reset the iterator to avoid a core dump 
+                    // to reset the iterator to avoid a core dump
                     break;
                 }
-
             }
         }
     };
@@ -409,15 +392,10 @@ void manager::run()
     background = new std::thread(body);
 }
 
-
 void manager::stop()
 {
-
     std::lock_guard<std::mutex> guard(workers_mutex);
 
     // Destructors will kill processors.
     workers.clear();
-
 }
-
-

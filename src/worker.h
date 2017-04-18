@@ -2,37 +2,36 @@
 #ifndef WORKER_H
 #define WORKER_H
 
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/random_generator.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <list>
 #include <map>
 #include <string>
 
-
 typedef std::string worker_id;
-
 
 enum worker_state
 {
-    RUNNING, STOPPED
+    RUNNING,
+    STOPPED
 };
-
 
 class worker
 {
-  private:
+private:
     static boost::uuids::random_generator uuidgen;
 
-  public:
-
+public:
     worker();
-    virtual ~worker() {}
+    virtual ~worker()
+    {
+    }
 
     worker_id id;
     std::string name;
     std::string job_id;
-    
+
     worker_state state;
 
     virtual void describe(boost::property_tree::ptree& p) = 0;
@@ -46,4 +45,3 @@ class worker
 };
 
 #endif
-

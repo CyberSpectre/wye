@@ -6,14 +6,12 @@
 
 #include <python_process.h>
 
-
 class lambda_process : public python_process
 {
-  public:
+public:
     lambda_process();
 
     void init_process(const boost::property_tree::ptree& p);
 };
 
 #endif
-

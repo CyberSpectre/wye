@@ -5,12 +5,10 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <iostream>
 
-
-process::process() 
-{ 
-    proc = nullptr; 
+process::process()
+{
+    proc = nullptr;
 }
-
 
 process::~process()
 {
@@ -24,26 +22,26 @@ process::~process()
     }
 }
 
-
 void process::run()
 {
     boost::process::posix_context ctx;
 
-    ctx.output_behavior.insert(boost::process::behavior_map::value_type(STDOUT_FILENO,
-                                boost::process::inherit_stream()));
+    ctx.output_behavior.insert(boost::process::behavior_map::value_type(
+        STDOUT_FILENO, boost::process::inherit_stream()));
 
-    ctx.output_behavior.insert(boost::process::behavior_map::value_type(STDERR_FILENO,
-                                boost::process::inherit_stream()));
+    ctx.output_behavior.insert(boost::process::behavior_map::value_type(
+        STDERR_FILENO, boost::process::inherit_stream()));
 
-    ctx.output_behavior.insert(boost::process::behavior_map::value_type(3,
-                                boost::process::capture_stream()));
+    ctx.output_behavior.insert(boost::process::behavior_map::value_type(
+        3, boost::process::capture_stream()));
 
     ctx.environment = boost::process::self::get_environment();
 
-    boost::process::posix_child c = boost::process::posix_launch(exec, args, ctx);
-    proc = std::shared_ptr<boost::process::posix_child>(new boost::process::posix_child(c));
+    boost::process::posix_child c =
+        boost::process::posix_launch(exec, args, ctx);
+    proc = std::shared_ptr<boost::process::posix_child>(
+        new boost::process::posix_child(c));
 }
-
 
 void process::terminate()
 {
@@ -58,12 +56,10 @@ void process::terminate()
     proc = nullptr;
 }
 
-
 boost::process::pistream& process::get_output()
 {
     return proc->get_output(3);
 }
-
 
 void process::describe(boost::property_tree::ptree& p)
 {
@@ -85,11 +81,11 @@ void process::describe(boost::property_tree::ptree& p)
     {
         p.put("state", "STOPPED");
     }
-    
+
     if (args.size() > 0)
     {
         boost::property_tree::ptree as;
-        for(auto i: args)
+        for (auto i : args)
         {
             boost::property_tree::ptree elt;
             elt.put_value(i);
@@ -101,7 +97,7 @@ void process::describe(boost::property_tree::ptree& p)
     if (inputs.size() > 0)
     {
         boost::property_tree::ptree ins;
-        for(auto i: inputs)
+        for (auto i : inputs)
         {
             ins.put(i.first, i.second);
         }
@@ -111,17 +107,17 @@ void process::describe(boost::property_tree::ptree& p)
     if (outputs.size() > 0)
     {
         boost::property_tree::ptree outs;
-        for(auto i: outputs)
+        for (auto i : outputs)
         {
             std::string name = i.first;
 
             boost::property_tree::ptree wal;
 
-            for(auto j: i.second)
+            for (auto j : i.second)
             {
                 boost::property_tree::ptree al;
 
-                for(auto k: j)
+                for (auto k : j)
                 {
                     boost::property_tree::ptree elt;
                     elt.put_value(k);
@@ -137,7 +133,6 @@ void process::describe(boost::property_tree::ptree& p)
         p.add_child("outputs", outs);
     }
 }
-
 
 bool process::is_running()
 {
@@ -158,14 +153,18 @@ bool process::is_running()
 
         if (::waitpid(proc->get_id(), &pid_status, WNOHANG) == -1)
         {
-            boost::throw_exception(boost::system::system_error(boost::system::error_code(errno, boost::system::get_system_category()), "Failed process id: " + proc->get_id()));
+            boost::throw_exception(boost::system::system_error(
+                boost::system::error_code(errno,
+                                          boost::system::get_system_category()),
+                "Failed process id: " + proc->get_id()));
             return false;
         }
     }
     catch (...)
     {
         // Assume exception is that process no longer exists.
-        std::cerr << "Process " << id << " appears to no longer exist." << std::endl;
+        std::cerr << "Process " << id << " appears to no longer exist."
+                  << std::endl;
         state = STOPPED;
         proc = nullptr;
 
@@ -174,4 +173,3 @@ bool process::is_running()
 
     return true;
 }
-

@@ -5,14 +5,11 @@
 #include <mutex>
 #include <string>
 
-
 #include <worker.h>
-
 
 python_process::python_process()
 {
 }
-
 
 void python_process::init_process(const boost::property_tree::ptree& p)
 {
@@ -29,7 +26,7 @@ void python_process::init_process(const boost::property_tree::ptree& p)
     }
 
     exec = "/usr/bin/python";
-    args = { {"python"}, {file} };
+    args = {{"python"}, {file}};
 
     try
     {
@@ -47,13 +44,13 @@ void python_process::init_process(const boost::property_tree::ptree& p)
     }
     catch (std::exception& e)
     {
-        // Uncomment if "name" becomes compulsary 
+        // Uncomment if "name" becomes compulsary
         // throw;
     }
 
     try
     {
-        for(auto i: p.get_child("outputs", boost::property_tree::ptree()))
+        for (auto i : p.get_child("outputs", boost::property_tree::ptree()))
         {
             std::string name = i.first;
 
@@ -61,11 +58,11 @@ void python_process::init_process(const boost::property_tree::ptree& p)
 
             worker::address_list al;
 
-            for(auto j: wal)
+            for (auto j : wal)
             {
                 worker::address a;
 
-                for(auto k: j.second)
+                for (auto k : j.second)
                 {
                     a.push_back(k.second.get_value<std::string>());
                 }
@@ -81,16 +78,16 @@ void python_process::init_process(const boost::property_tree::ptree& p)
         std::cout << e.what();
     }
 
-    for(auto i: outputs)
+    for (auto i : outputs)
     {
         std::string name = i.first;
 
-        for(auto j: i.second)
+        for (auto j : i.second)
         {
             std::string outs = name + ":";
             std::string sep = "";
 
-            for(auto k: j)
+            for (auto k : j)
             {
                 outs.append(sep);
                 outs.append(k);
@@ -102,9 +99,8 @@ void python_process::init_process(const boost::property_tree::ptree& p)
     }
 }
 
-
-boost::property_tree::ptree
-python_process::run_process(const boost::property_tree::ptree& p)
+boost::property_tree::ptree python_process::run_process(
+    const boost::property_tree::ptree& p)
 {
     // Call the base class run()
     run();
@@ -113,7 +109,7 @@ python_process::run_process(const boost::property_tree::ptree& p)
 
     std::string line;
 
-    while(std::getline(out, line))
+    while (std::getline(out, line))
     {
         if (line == "INIT")
         {
@@ -122,25 +118,27 @@ python_process::run_process(const boost::property_tree::ptree& p)
 
         if (line.substr(0, 6) == "INPUT:")
         {
-           line = line.substr(6);
+            line = line.substr(6);
 
             int pos = line.find(":");
             if (pos == -1)
             {
-                throw std::runtime_error("Did not interpret process output INPUT:" + line);
+                throw std::runtime_error(
+                    "Did not interpret process output INPUT:" + line);
             }
 
             std::string name = line.substr(0, pos);
             std::string input = line.substr(pos + 1);
 
             inputs[name] = input;
-		
+
             continue;
         }
 
         if (line.substr(0, 6) == "ERROR:")
         {
-    	    throw std::runtime_error("Process failed to start: " + line.substr(6));
+            throw std::runtime_error("Process failed to start: " +
+                                     line.substr(6));
         }
 
         if (line.substr(0, 7) == "NOTICE:")
@@ -180,14 +178,13 @@ python_process::run_process(const boost::property_tree::ptree& p)
     {
         boost::property_tree::ptree ins;
 
-        for(auto i: inputs)
+        for (auto i : inputs)
         {
-	        ins.put(i.first, i.second);
-	    }
+            ins.put(i.first, i.second);
+        }
 
         r.add_child("inputs", ins);
     }
 
     return r;
 }
-

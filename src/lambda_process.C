@@ -5,14 +5,11 @@
 #include <mutex>
 #include <string>
 
-
 #include <worker.h>
-
 
 lambda_process::lambda_process()
 {
 }
-
 
 void lambda_process::init_process(const boost::property_tree::ptree& p)
 {
@@ -34,7 +31,7 @@ void lambda_process::init_process(const boost::property_tree::ptree& p)
     try
     {
         job_id = p.get<std::string>("job_id");
-    } 
+    }
     catch (std::exception& e)
     {
         // Re-throw the error
@@ -63,7 +60,7 @@ void lambda_process::init_process(const boost::property_tree::ptree& p)
 
     try
     {
-        for(auto i: p.get_child("outputs", boost::property_tree::ptree()))
+        for (auto i : p.get_child("outputs", boost::property_tree::ptree()))
         {
             std::string name = i.first;
 
@@ -71,11 +68,11 @@ void lambda_process::init_process(const boost::property_tree::ptree& p)
 
             worker::address_list al;
 
-            for(auto j: wal)
+            for (auto j : wal)
             {
                 worker::address a;
 
-                for(auto k: j.second)
+                for (auto k : j.second)
                 {
                     a.push_back(k.second.get_value<std::string>());
                 }
@@ -95,17 +92,17 @@ void lambda_process::init_process(const boost::property_tree::ptree& p)
     buf << "import wye.func; wye.func." << call << "('" << lambda << "', [";
 
     std::string psep = "";
-    
-    for(auto i: outputs)
+
+    for (auto i : outputs)
     {
         std::string name = i.first;
 
-        for(auto j: i.second)
+        for (auto j : i.second)
         {
             std::string outs = name + ":";
             std::string sep = "";
 
-            for(auto k: j)
+            for (auto k : j)
             {
                 outs.append(sep);
                 outs.append(k);
@@ -121,6 +118,5 @@ void lambda_process::init_process(const boost::property_tree::ptree& p)
     buf << "])";
 
     exec = "/usr/bin/python";
-    args = { {"python"}, {"-c"}, buf.str() };
+    args = {{"python"}, {"-c"}, buf.str()};
 }
-
