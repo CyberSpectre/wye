@@ -1,0 +1,14 @@
+sudo: false
+
+language: cpp
+
+compiler:
+  - g++
+
+script:
+  - autoreconf -fi
+  - ./configure
+# Source code builds in Travis, but documentation doesn't.  Hence this limits
+# the amount of wandering around the directories.
+  - (cd src; make)
+
