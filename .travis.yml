@@ -2,6 +2,19 @@ sudo: false
 
 language: cpp
 
+cache:
+  apt: true
+
+addons:
+  apt:
+    packages:
+    - libtool
+    - build-essential
+    - devscripts
+    - apt-utils
+    - gcc
+    - g++
+
 compiler:
   - g++
 
