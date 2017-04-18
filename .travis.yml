@@ -19,6 +19,7 @@ compiler:
   - g++
 
 script:
+  - autoreconf -V
   - autoreconf -fi
   - ./configure
 # Source code builds in Travis, but documentation doesn't.  Hence this limits
