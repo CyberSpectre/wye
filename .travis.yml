@@ -1,4 +1,5 @@
 sudo: true
+dist: trusty
 
 language: cpp
 
@@ -9,12 +10,17 @@ addons:
   apt:
     packages:
     - libboost-dev
+    - libboost-coroutine-dev
     - libboost-program-options-dev
+    - libboost-serialization-dev
     - libboost-system-dev
     - libboost-all-dev
 
 compiler:
   - g++
+
+install:
+  - sudo apt-get update -qq
 
 script:
   - autoreconf -fi
