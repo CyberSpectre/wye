@@ -15,6 +15,10 @@ addons:
     - gcc
     - g++
 
+before_script:
+    - sudo apt-get update -qq
+    - sudo apt-get install --only-upgrade autoconf
+
 compiler:
   - g++
 
