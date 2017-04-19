@@ -3,13 +3,10 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <iostream>
 
-
 boost::uuids::random_generator job::uuidgen;
-
 
 job::job()
 {
-
     // UUID
     boost::uuids::uuid u = uuidgen();
 
@@ -17,4 +14,3 @@ job::job()
     ofs << u;
     id = ofs.str();
 }
-
