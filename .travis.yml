@@ -20,7 +20,6 @@ compiler:
   - g++
 
 install:
-  - sudo apt-get update -qq
 
 script:
 # Travis-CI linux distribution (14.04) 'trusty' does not at this time provide
