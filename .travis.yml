@@ -2,6 +2,19 @@ sudo: false
 
 language: cpp
 
+cache:
+  apt: true
+
+addons:
+  apt:
+    packages:
+    - libboost-coroutine-dev
+    - libboost-dev
+    - libboost-program-options-dev
+    - libboost_serialization-dev
+    - libboost-system-dev
+    - libboost-all-dev
+
 compiler:
   - g++
 
