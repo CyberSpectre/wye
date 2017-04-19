@@ -24,8 +24,11 @@ install:
 script:
 # Travis-CI linux distribution (14.04) 'trusty' does not at this time provide
 # Boost 1.60 (or greater) which is required to be able to build Wye therefore
-# do nothing for now. 
-#  - autoreconf -fi
+# do nothing except the autoreconf for now. 
+#
+# For an explanation of the issue see: https://github.com/travis-ci/travis-ci/issues/6300
+#
+  - autoreconf -fi
 #  - ./configure
 #  - (cd src; make)
 
