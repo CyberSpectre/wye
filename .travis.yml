@@ -23,9 +23,10 @@ install:
   - sudo apt-get update -qq
 
 script:
-  - autoreconf -fi
-  - ./configure
-# Source code builds in Travis, but documentation doesn't.  Hence this limits
-# the amount of wandering around the directories.
-  - (cd src; make)
+# Travis-CI linux distribution (14.04) 'trusty' does not at this time provide
+# Boost 1.60 (or greater) which is required to be able to build Wye therefore
+# do nothing for now. 
+#  - autoreconf -fi
+#  - ./configure
+#  - (cd src; make)
 
