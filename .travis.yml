@@ -8,10 +8,8 @@ cache:
 addons:
   apt:
     packages:
-    - libboost-coroutine
     - libboost-dev
     - libboost-program-options-dev
-    - libboost-serialization
     - libboost-system-dev
     - libboost-all-dev
 
