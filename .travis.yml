@@ -1,29 +1,11 @@
-sudo: true
+sudo: false
 
 language: cpp
-
-cache:
-  apt: true
-
-addons:
-  apt:
-    packages:
-    - libtool
-    - build-essential
-    - devscripts
-    - apt-utils
-    - gcc
-    - g++
-
-before_script:
-    - sudo apt-get update -qq
-    - sudo apt-get install --only-upgrade autoconf
 
 compiler:
   - g++
 
 script:
-  - autoreconf -V
   - autoreconf -fi
   - ./configure
 # Source code builds in Travis, but documentation doesn't.  Hence this limits
