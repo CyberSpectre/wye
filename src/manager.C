@@ -9,7 +9,9 @@
 #include <executable_process.h>
 #include <invalid_request.h>
 #include <lambda_process.h>
+#include <lua_process.h>
 #include <python_process.h>
+
 
 manager::manager()
 {
@@ -121,6 +123,11 @@ boost::property_tree::ptree manager::create_worker(
         else if (model == "lambda")
         {
             proc = std::shared_ptr<process>(new lambda_process());
+            proc->init_process(p);
+        }
+        else if (model == "lua")
+        {
+            proc = std::shared_ptr<process>(new lua_process());
             proc->init_process(p);
         }
         else

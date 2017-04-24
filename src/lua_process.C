@@ -1,4 +1,4 @@
-#include <executable_process.h>
+#include <lua_process.h>
 
 #include <boost/process.hpp>
 #include <iostream>
@@ -7,17 +7,17 @@
 
 #include <worker.h>
 
-executable_process::executable_process()
+lua_process::lua_process()
 {
 }
 
-void executable_process::init_process(const boost::property_tree::ptree& p)
+void lua_process::init_process(const boost::property_tree::ptree& p)
 {
     std::string file;
 
     try
     {
-        exec = p.get<std::string>("exe");
+        file = p.get<std::string>("file");
     }
     catch (std::exception& e)
     {
@@ -25,14 +25,8 @@ void executable_process::init_process(const boost::property_tree::ptree& p)
         throw;
     }
 
-    // An absolute path must be specified for an executable
-    if (exec.substr(0, 1) != "/")
-    {
-        throw std::runtime_error("Absolute path not specifed for executable: " +
-                                 exec);
-    }
-
-    args = {{exec}, {file}};
+    exec = "/usr/bin/lua";
+    args = {{"lua"}, {file}};
 
     try
     {
@@ -105,7 +99,7 @@ void executable_process::init_process(const boost::property_tree::ptree& p)
     }
 }
 
-boost::property_tree::ptree executable_process::run_process(
+boost::property_tree::ptree lua_process::run_process(
     const boost::property_tree::ptree& p)
 {
     // Call the base class run()

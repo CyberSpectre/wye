@@ -112,6 +112,10 @@ class Job:
                                   {"lambda":func, "call": "run_lambda"},
                                   outputs, parallelism)
 
+    def define_lua_worker(self, name, file, outputs=None, parallelism=1):
+        return self.define_worker(name, "lua", {"file":file}, outputs,
+                                  parallelism)
+
     def define_generator_worker(self, name, func, outputs=None, parallelism=1):
         func = base64.b64encode(marshal.dumps(func.func_code))
         return self.define_worker(name, "lambda",

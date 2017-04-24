@@ -15,10 +15,14 @@ src/Makefile
 src/Makefile.in
 src/wye-service
 init/wye.service
+libtool
+ltmain.sh
 aclocal.m4
 autom4te.cache
+config.guess
 config.log
 config.status
+config.sub
 src/.deps
 wye-*.tar.gz
 RPM

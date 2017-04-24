@@ -97,6 +97,10 @@ class Job:
         return self.define_worker(name, "lambda", {"lambda":func},
                                   outputs, parallelism)
 
+    def define_lua_worker(self, name, file, outputs=None, parallelism=1):
+        return self.define_worker(name, "lua", {"file":file}, outputs,
+                                  parallelism)
+
     def define_worker(self, name, model, params, outputs=[], parallelism=1):
         worker = Worker(self, name, model, params, outputs, parallelism)
         self.workers.append(worker)
