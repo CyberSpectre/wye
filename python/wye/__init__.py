@@ -73,7 +73,8 @@ class Worker:
 
             res = requests.put(self.job.context.url, data=json.dumps(req))
             if res.status_code != 200:
-                raise RuntimeError, "Bad request"
+                raise RuntimeError, res.reason
+
             res = res.json()
 
             id = res["id"]
@@ -96,6 +97,10 @@ class Job:
         self.name = name
         self.description = description
         self.workers = []
+
+    def define_executable_worker(self, name, exe, outputs=None, parallelism=1):
+        return self.define_worker(name, "executable", {"exe":exe}, outputs,
+                                  parallelism)
 
     def define_python_worker(self, name, file, outputs=None, parallelism=1):
         return self.define_worker(name, "python", {"file":file}, outputs,

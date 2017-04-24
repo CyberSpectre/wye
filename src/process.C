@@ -39,6 +39,7 @@ void process::run()
 
     boost::process::posix_child c =
         boost::process::posix_launch(exec, args, ctx);
+
     proc = std::shared_ptr<boost::process::posix_child>(
         new boost::process::posix_child(c));
 }

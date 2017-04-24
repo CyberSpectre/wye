@@ -18,6 +18,7 @@ public:
     virtual ~process();
 
     virtual void init_process(const boost::property_tree::ptree& p) = 0;
+
     virtual boost::property_tree::ptree run_process(
         const boost::property_tree::ptree& p) = 0;
 

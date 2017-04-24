@@ -1,30 +1,19 @@
 
+#include <manager.h>
+
 #include <boost/uuid/uuid_io.hpp>
 #include <iostream>
 #include <mutex>
 #include <thread>
 
+#include <executable_process.h>
+#include <invalid_request.h>
 #include <lambda_process.h>
-#include <manager.h>
 #include <python_process.h>
-
-std::map<error_code, std::string> error_string = {
-    {OK, "OK"},
-    {NOT_IMPLEMENTED, "NOT_IMPLEMENTED"},
-    {INVALID_REQUEST, "INVALID_REQUEST"},
-    {PROC_INIT_FAIL, "PROCESSING_INIT_FAIL"}};
 
 manager::manager()
 {
     background = nullptr;
-}
-
-boost::property_tree::ptree manager::error(error_code c, const std::string& msg)
-{
-    boost::property_tree::ptree p;
-    p.put("error_code", error_string[c]);
-    p.put("error", msg);
-    return p;
 }
 
 boost::property_tree::ptree manager::handle(
@@ -38,7 +27,7 @@ boost::property_tree::ptree manager::handle(
     }
     catch (...)
     {
-        throw std::runtime_error("Must supply an 'operation' value");
+        throw std::invalid_request("Must supply an 'operation' value");
     }
 
     if (op == "create-worker")
@@ -76,7 +65,10 @@ boost::property_tree::ptree manager::handle(
         return delete_job(p);
     }
 
-    return error(INVALID_REQUEST, "Operation '" + op + "' not recognised.");
+    throw std::invalid_request("Operation '" + op + "' not recognised.");
+
+    boost::property_tree::ptree r;
+    return r;
 }
 
 boost::property_tree::ptree manager::get_workers(
@@ -109,14 +101,19 @@ boost::property_tree::ptree manager::create_worker(
     }
     catch (...)
     {
-        return error(INVALID_REQUEST, "Must supply a 'model' value");
+        throw std::invalid_request("Must supply a 'model' value");
     }
 
     std::shared_ptr<process> proc;
 
     try
     {
-        if (model == "python")
+        if (model == "executable")
+        {
+            proc = std::shared_ptr<process>(new executable_process());
+            proc->init_process(p);
+        }
+        else if (model == "python")
         {
             proc = std::shared_ptr<process>(new python_process());
             proc->init_process(p);
@@ -126,20 +123,15 @@ boost::property_tree::ptree manager::create_worker(
             proc = std::shared_ptr<process>(new lambda_process());
             proc->init_process(p);
         }
-        else if (model == "lua")
-        {
-            return error(NOT_IMPLEMENTED, "Not implemented");
-        }
         else
         {
-            return error(INVALID_REQUEST,
-                         "Worker model '" + model + "' not known");
+            throw std::invalid_request("Worker model '" + model +
+                                       "' not known");
         }
     }
     catch (std::exception& e)
     {
-        std::cerr << e.what() << std::endl;
-        return error(INVALID_REQUEST, e.what());
+        throw;
     }
 
     try
@@ -154,9 +146,11 @@ boost::property_tree::ptree manager::create_worker(
     }
     catch (...)
     {
-        std::cerr << "Failed to create " << model << " process" << std::endl;
-        return error(PROC_INIT_FAIL, "Failed to create " + model + " process");
+        throw std::runtime_error("Failed to create " + model + " process");
     }
+
+    boost::property_tree::ptree r;
+    return r;
 }
 
 boost::property_tree::ptree manager::delete_worker(
@@ -170,20 +164,19 @@ boost::property_tree::ptree manager::delete_worker(
     }
     catch (...)
     {
-        return error(INVALID_REQUEST, "Must supply an 'id' value");
+        throw std::invalid_request("Must supply an 'id' value");
     }
 
     std::lock_guard<std::mutex> guard(workers_mutex);
 
     if (workers.find(id) == workers.end())
     {
-        return error(INVALID_REQUEST, "Worker '" + id + "' not known.");
+        throw std::invalid_request("Worker '" + id + "' not known.");
     }
 
     workers.erase(id);
 
     boost::property_tree::ptree r;
-
     return r;
 }
 
@@ -199,7 +192,7 @@ boost::property_tree::ptree manager::create_job(
     }
     catch (...)
     {
-        return error(INVALID_REQUEST, "Must supply a 'name'.");
+        throw std::invalid_request("Must supply a 'name'.");
     }
 
     try
@@ -208,7 +201,7 @@ boost::property_tree::ptree manager::create_job(
     }
     catch (...)
     {
-        return error(INVALID_REQUEST, "Must supply a 'description'.");
+        throw std::invalid_request("Must supply a 'description'.");
     }
 
     job j;
@@ -236,14 +229,14 @@ boost::property_tree::ptree manager::delete_job(
     }
     catch (...)
     {
-        return error(INVALID_REQUEST, "Must supply an 'id' value");
+        throw std::invalid_request("Must supply an 'id' value");
     }
 
     std::lock_guard<std::mutex> jguard(jobs_mutex);
 
     if (jobs.find(id) == jobs.end())
     {
-        return error(INVALID_REQUEST, "Job '" + id + "' not known.");
+        throw std::invalid_request("Job '" + id + "' not known.");
     }
 
     std::lock_guard<std::mutex> wguard(workers_mutex);
@@ -272,7 +265,6 @@ boost::property_tree::ptree manager::delete_job(
     jobs.erase(id);
 
     boost::property_tree::ptree r;
-
     return r;
 }
 
@@ -313,14 +305,14 @@ boost::property_tree::ptree manager::get_job(
     }
     catch (...)
     {
-        return error(INVALID_REQUEST, "Must supply an 'id' value");
+        throw std::invalid_request("Must supply an 'id' value");
     }
 
     std::lock_guard<std::mutex> jguard(jobs_mutex);
 
     if (jobs.find(id) == jobs.end())
     {
-        return error(INVALID_REQUEST, "Job '" + id + "' not known.");
+        throw std::invalid_request("Job '" + id + "' not known.");
     }
 
     boost::property_tree::ptree w;

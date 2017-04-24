@@ -3,6 +3,9 @@
 #include <boost/http/algorithm.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <stdexcept>
+
+#include <invalid_request.h>
 
 using namespace std;
 using namespace boost;
@@ -83,6 +86,23 @@ void connection::operator()(asio::yield_context yield)
                 try
                 {
                     pt = mgr.handle(pt);
+                }
+                catch (std::invalid_request& e)
+                {
+                    // Write reply.
+                    http::message reply;
+
+                    std::string errormsg = e.what();
+
+                    std::cerr << "***ERROR: " << errormsg << std::endl;
+
+                    std::copy(errormsg.begin(), errormsg.end(),
+                              std::back_inserter(reply.body()));
+
+                    self->socket.async_write_response(
+                        400, string_ref("Bad Request"), reply, yield);
+
+                    return;
                 }
                 catch (std::exception& e)
                 {

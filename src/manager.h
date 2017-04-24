@@ -12,22 +12,10 @@
 #include <process.h>
 #include <worker.h>
 
-enum error_code
-{
-    OK,
-    NOT_IMPLEMENTED,
-    INVALID_REQUEST,
-    PROC_INIT_FAIL
-};
-
-extern std::map<error_code, std::string> error_string;
-
 class manager
 {
 private:
     std::thread* background;
-
-    boost::property_tree::ptree error(error_code, const std::string& msg);
 
 public:
     manager();
