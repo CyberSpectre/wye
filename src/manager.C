@@ -141,7 +141,7 @@ boost::property_tree::ptree manager::create_worker(
         // Keep a map of the processes.
         workers[proc->id] = proc;
 
-        std::cerr << "Running " + model + " process..." << std::endl;
+        std::cerr << "Running " + model + " process id: " << proc->id << std::endl;
         return proc->run_process(p);
     }
     catch (...)
