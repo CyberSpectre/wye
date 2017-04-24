@@ -18,7 +18,7 @@ process::~process()
         proc->wait();
         proc = nullptr;
 
-        std::cerr << "Process killed" << std::endl;
+        std::cerr << "Process id: " << id << " killed" << std::endl;
     }
 }
 
@@ -154,17 +154,15 @@ bool process::is_running()
 
         if (::waitpid(proc->get_id(), &pid_status, WNOHANG) == -1)
         {
-            boost::throw_exception(boost::system::system_error(
-                boost::system::error_code(errno,
-                                          boost::system::get_system_category()),
-                "Failed process id: " + proc->get_id()));
-            return false;
+            // Do not call proc-get_id() in here or it'll seg fault
+           
+            throw std::runtime_error("Process id: " + id + " failed");
         }
     }
     catch (...)
     {
         // Assume exception is that process no longer exists.
-        std::cerr << "Process " << id << " appears to no longer exist."
+        std::cerr << "Process id: " << id << " appears to no longer exist."
                   << std::endl;
         state = STOPPED;
         proc = nullptr;

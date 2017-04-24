@@ -369,7 +369,7 @@ void manager::run()
                 {
                     std::string id = v->second->id;
 
-                    std::cout << "worker id: " << id << " failed" << std::endl;
+                    std::cerr << "Worker id: " << id << " failed" << std::endl;
 
                     workers.erase(v++);
 
@@ -381,7 +381,14 @@ void manager::run()
         }
     };
 
-    background = new std::thread(body);
+    try
+    {
+        background = new std::thread(body);
+    }
+    catch (...)
+    {
+        throw;        
+    }
 }
 
 void manager::stop()
