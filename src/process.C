@@ -139,7 +139,7 @@ bool process::is_running()
 {
     if (state != RUNNING)
     {
-        std::cerr << "Process " << id << " not RUNNING." << std::endl;
+        //std::cerr << "Process " << id << " not RUNNING." << std::endl;
         return false;
     }
 

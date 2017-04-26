@@ -67,6 +67,12 @@ boost::property_tree::ptree manager::handle(
         return delete_job(p);
     }
 
+    if (op == "delete-all-jobs")
+    {
+        return delete_all_jobs(p);
+    }
+
+
     throw std::invalid_request("Operation '" + op + "' not recognised.");
 
     boost::property_tree::ptree r;
@@ -356,11 +362,24 @@ boost::property_tree::ptree manager::get_job(
     return r;
 }
 
+
+boost::property_tree::ptree manager::delete_all_jobs(
+    const boost::property_tree::ptree& p)
+{
+    boost::property_tree::ptree r;
+
+    r = get_jobs(p);
+
+
+    //boost::property_tree::ptree r;
+    return r;
+}
+
 void manager::run()
 {
     // Manager background thread body.
-    // This occassionally checks the status of all worker processes
-    // and removes any workers for which the process has died.
+    // This occassionally checks the status of all worker processes.
+    // Failed workers aren't deleted just marked as STOPPED
 
     auto body = [this]() {
         while (1)
@@ -371,19 +390,8 @@ void manager::run()
 
             for (auto v = workers.begin(); v != workers.end(); v++)
             {
-                // Check the worker process is still alive
-                if (v->second->is_running() == false)
-                {
-                    std::string id = v->second->id;
-
-                    std::cerr << "Worker id: " << id << " failed" << std::endl;
-
-                    workers.erase(v++);
-
-                    // break as the erase affects the map so need
-                    // to reset the iterator to avoid a core dump
-                    break;
-                }
+                // Check the status of the worker process
+                v->second->is_running();
             }
         }
     };

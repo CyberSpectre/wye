@@ -46,6 +46,8 @@ public:
 
     boost::property_tree::ptree get_jobs(const boost::property_tree::ptree&);
 
+    boost::property_tree::ptree delete_all_jobs(const boost::property_tree::ptree&);
+
     void run();
 
     void stop();

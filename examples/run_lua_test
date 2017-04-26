@@ -1,0 +1,19 @@
+#!/usr/bin/env python
+
+import sys
+import wye
+
+
+url = "http://localhost:8080"
+
+context = wye.Context(url)
+
+job = context.define_job(name="job4", description="A lua test job")
+
+# Create 2 threads/instances running an executable
+exe = job.define_lua_worker("lua", "l1.lua", parallelism=2)
+
+job_id = job.implement()
+
+sys.stderr.write("Job %s is running.\n" % job_id)
+

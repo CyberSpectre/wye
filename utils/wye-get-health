@@ -12,18 +12,23 @@ context = wye.Context(url)
 
 workers = context.get_workers()
 
+fail_count = 0
+
 for w in workers:
     state = workers[w].get("state","")
 
     if state != "RUNNING":
 
+        fail_count += 1
+
         sys.stderr.write("Worker %s (%s) is not RUNNING.\n" %
                          (workers[w].get("name", ""),
                           workers[w].get("job_id", "")))
 
-        sys.exit(1)
-
-sys.stderr.write("All workers are running.\n")
+if fail_count != 0:
+    sys.exit(1)
+else:
+    sys.stderr.write("All workers are running.\n")
 
 sys.exit(0)
 
