@@ -62,6 +62,94 @@ boost::process::pistream& process::get_output()
     return proc->get_output(3);
 }
 
+boost::property_tree::ptree process::run_process(
+    const boost::property_tree::ptree& p)
+{
+    run();
+
+    boost::process::pistream& out = get_output();
+
+    std::string line;
+
+    while (std::getline(out, line))
+    {
+        if (line == "INIT")
+        {
+            continue;
+        }
+
+        if (line.substr(0, 6) == "INPUT:")
+        {
+            line = line.substr(6);
+
+            int pos = line.find(":");
+            if (pos == -1)
+            {
+                throw std::runtime_error(
+                    "Did not interpret process output INPUT:" + line);
+            }
+
+            std::string name = line.substr(0, pos);
+            std::string input = line.substr(pos + 1);
+
+            inputs[name] = input;
+
+            continue;
+        }
+        if (line.substr(0, 6) == "ERROR:")
+        {
+            throw std::runtime_error("Process failed to start: " +
+                                     line.substr(6));
+        }
+
+        if (line.substr(0, 7) == "NOTICE:")
+        {
+            std::cerr << "Notice: " << line.substr(7) << std::endl;
+            continue;
+        }
+
+        if (line == "RUNNING")
+        {
+            std::cerr << "Process started successfully." << std::endl;
+            break;
+        }
+
+        std::cerr << "Didn't understand: " << line << std::endl;
+
+        // This 'waits' the process.
+        throw std::runtime_error("Bad return string: " + line);
+    }
+
+    if (out.bad())
+    {
+        // Process is shared ptr, will go out of scope and be terminated.
+        throw std::runtime_error("Process didn't send RUNNING");
+    }
+
+    if (out.eof())
+    {
+        // Process is shared ptr, will go out of scope and be terminated.
+        throw std::runtime_error("Process didn't send RUNNING");
+    }
+
+    boost::property_tree::ptree r;
+    r.put("id", id);
+
+    if (inputs.size() > 0)
+    {
+        boost::property_tree::ptree ins;
+
+        for (auto i : inputs)
+        {
+            ins.put(i.first, i.second);
+        }
+
+        r.add_child("inputs", ins);
+    }
+
+    return r;
+}
+
 void process::describe(boost::property_tree::ptree& p)
 {
     p.put("id", id);
@@ -155,7 +243,7 @@ bool process::is_running()
         if (::waitpid(proc->get_id(), &pid_status, WNOHANG) == -1)
         {
             // Do not call proc-get_id() in here or it'll seg fault
-           
+
             throw std::runtime_error("Process id: " + id + " failed");
         }
     }

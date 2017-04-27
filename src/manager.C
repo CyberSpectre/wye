@@ -6,12 +6,12 @@
 #include <mutex>
 #include <thread>
 
+#include <application_process.h>
 #include <executable_process.h>
 #include <invalid_request.h>
 #include <lambda_process.h>
 #include <lua_process.h>
 #include <python_process.h>
-
 
 manager::manager()
 {
@@ -67,12 +67,6 @@ boost::property_tree::ptree manager::handle(
         return delete_job(p);
     }
 
-    if (op == "delete-all-jobs")
-    {
-        return delete_all_jobs(p);
-    }
-
-
     throw std::invalid_request("Operation '" + op + "' not recognised.");
 
     boost::property_tree::ptree r;
@@ -116,13 +110,21 @@ boost::property_tree::ptree manager::create_worker(
 
     try
     {
-        if (model == "executable")
+        if (model == "application")
         {
+            // Used to run commercial stand-alone applications
+            proc = std::shared_ptr<process>(new application_process());
+            proc->init_process(p);
+        }
+        else if (model == "executable")
+        {
+            // Used to run Linux executables
             proc = std::shared_ptr<process>(new executable_process());
             proc->init_process(p);
         }
         else if (model == "python")
         {
+            // Used to run python scripts
             proc = std::shared_ptr<process>(new python_process());
             proc->init_process(p);
         }
@@ -133,6 +135,7 @@ boost::property_tree::ptree manager::create_worker(
         }
         else if (model == "lua")
         {
+            // Used to run LUA scripts
             proc = std::shared_ptr<process>(new lua_process());
             proc->init_process(p);
         }
@@ -154,8 +157,13 @@ boost::property_tree::ptree manager::create_worker(
         // Keep a map of the processes.
         workers[proc->id] = proc;
 
-        std::cerr << "Running " + model + " process id: " << proc->id << std::endl;
+        std::cerr << "Creating " + model + " process id: " << proc->id
+                  << std::endl;
         return proc->run_process(p);
+    }
+    catch (std::exception& e)
+    {
+        throw std::runtime_error(e.what());
     }
     catch (...)
     {
@@ -362,19 +370,6 @@ boost::property_tree::ptree manager::get_job(
     return r;
 }
 
-
-boost::property_tree::ptree manager::delete_all_jobs(
-    const boost::property_tree::ptree& p)
-{
-    boost::property_tree::ptree r;
-
-    r = get_jobs(p);
-
-
-    //boost::property_tree::ptree r;
-    return r;
-}
-
 void manager::run()
 {
     // Manager background thread body.
@@ -402,7 +397,7 @@ void manager::run()
     }
     catch (...)
     {
-        throw;        
+        throw;
     }
 }
 

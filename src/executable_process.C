@@ -25,13 +25,6 @@ void executable_process::init_process(const boost::property_tree::ptree& p)
         throw;
     }
 
-    // An absolute path must be specified for an executable
-    if (exec.substr(0, 1) != "/")
-    {
-        throw std::runtime_error("Absolute path not specifed for executable: " +
-                                 exec);
-    }
-
     args = {{exec}, {file}};
 
     try
@@ -81,7 +74,7 @@ void executable_process::init_process(const boost::property_tree::ptree& p)
     }
     catch (std::exception& e)
     {
-        std::cout << e.what();
+        std::cerr << e.what();
     }
 
     for (auto i : outputs)
@@ -103,28 +96,4 @@ void executable_process::init_process(const boost::property_tree::ptree& p)
             args.push_back(outs);
         }
     }
-}
-
-boost::property_tree::ptree executable_process::run_process(
-    const boost::property_tree::ptree& p)
-{
-    // Call the base class run()
-    run();
-
-    boost::property_tree::ptree r;
-    r.put("id", id);
-
-    if (inputs.size() > 0)
-    {
-        boost::property_tree::ptree ins;
-
-        for (auto i : inputs)
-        {
-            ins.put(i.first, i.second);
-        }
-
-        r.add_child("inputs", ins);
-    }
-
-    return r;
 }

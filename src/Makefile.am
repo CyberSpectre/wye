@@ -2,6 +2,7 @@
 bin_PROGRAMS = wye-service
 
 wye_service_SOURCES = main.C \
+			application_process.C \
 			connection.C \
 			executable_process.C \
 			job.C \

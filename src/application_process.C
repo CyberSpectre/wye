@@ -1,4 +1,4 @@
-#include <lua_process.h>
+#include <application_process.h>
 
 #include <boost/process.hpp>
 #include <iostream>
@@ -7,17 +7,17 @@
 
 #include <worker.h>
 
-lua_process::lua_process()
+application_process::application_process()
 {
 }
 
-void lua_process::init_process(const boost::property_tree::ptree& p)
+void application_process::init_process(const boost::property_tree::ptree& p)
 {
     std::string file;
 
     try
     {
-        file = p.get<std::string>("file");
+        exec = p.get<std::string>("exe");
     }
     catch (std::exception& e)
     {
@@ -25,8 +25,14 @@ void lua_process::init_process(const boost::property_tree::ptree& p)
         throw;
     }
 
-    exec = "/usr/bin/lua";
-    args = {{"lua"}, {file}};
+    // An absolute path must be specified for an application
+    if (exec.substr(0, 1) != "/")
+    {
+        throw std::runtime_error(
+            "Absolute path not specifed for application: " + exec);
+    }
+
+    args = {{exec}, {file}};
 
     try
     {
@@ -97,4 +103,33 @@ void lua_process::init_process(const boost::property_tree::ptree& p)
             args.push_back(outs);
         }
     }
+}
+
+boost::property_tree::ptree application_process::run_process(
+    const boost::property_tree::ptree& p)
+{
+    // Call the base class run()
+    run();
+
+    // This version of method deliberately does not check for
+    // the receipt of INIT, RUNNING, etc as its intended to
+    // be used with commercial stand-alone applications that
+    // can't be tailored to send those strings.
+
+    boost::property_tree::ptree r;
+    r.put("id", id);
+
+    if (inputs.size() > 0)
+    {
+        boost::property_tree::ptree ins;
+
+        for (auto i : inputs)
+        {
+            ins.put(i.first, i.second);
+        }
+
+        r.add_child("inputs", ins);
+    }
+
+    return r;
 }

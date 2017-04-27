@@ -94,7 +94,7 @@ void connection::operator()(asio::yield_context yield)
 
                     std::string errormsg = e.what();
 
-                    std::cerr << "***ERROR: " << errormsg << std::endl;
+                    std::cerr << "Error: " << errormsg << std::endl;
 
                     std::copy(errormsg.begin(), errormsg.end(),
                               std::back_inserter(reply.body()));

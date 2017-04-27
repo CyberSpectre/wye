@@ -84,6 +84,10 @@ class Job:
         self.description = description
         self.workers = []
 
+    def define_application_worker(self, name, exe, outputs=None, parallelism=1):
+        return self.define_worker(name, "application", {"exe":exe}, outputs,
+                                  parallelism)
+
     def define_executable_worker(self, name, exe, outputs=[], parallelism=1):
         return self.define_worker(name, "executable", {"exe":exe}, outputs,
                                   parallelism)

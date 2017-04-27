@@ -85,7 +85,7 @@ void lambda_process::init_process(const boost::property_tree::ptree& p)
     }
     catch (std::exception& e)
     {
-        std::cout << e.what();
+        std::cerr << e.what();
     }
 
     std::ostringstream buf;
